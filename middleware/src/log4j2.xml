@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO" shutdownHook="disable">
+    <CustomLevels>
+        <CustomLevel name="STATS" intLevel="350" />
+    </CustomLevels>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} (%N) %-5level %logger{36} - %msg%n" />
+        </Console>
+        <File name="Stats" fileName="logs/stats.log" immediateFlush="false" append="false">
+            <PatternLayout pattern="%msg%n"
+                           header="Elapsed Time, AVG Throughput, AVG Queue Size, AVG Waiting Time, AVG Service Time, AVG Response Time, AVG SET Response Time, AVG GET Response Time, AVG MULTI-GET Response Time, #SETS, #GETS, #MULTIGETS, GET MissRatio, MULTI-GET MissRatio, AVG MULTI-GET Size\r\n"/>
+        </File>
+        <File name="LogFile" fileName="logs/middleware.log" immediateFlush="false" append="false">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss} (%N) %-5level - %msg%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console" level="INFO" />
+            <AppenderRef ref="Stats" level="STATS"/>
+            <AppenderRef ref="LogFile" level="INFO"/>
+        </Root>
+
+    </Loggers>
+</Configuration>
+
