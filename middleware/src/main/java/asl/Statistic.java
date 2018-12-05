@@ -9,7 +9,7 @@ class Statistic {
      * @param type {@link Request#type Request type}
      * @param queueWaitingTime {@link Request#getQueueWaitingTime() Request queue waiting time}
      * @param serviceTime {@link Request#getServiceTime() Request service time}
-     * @param responseTime {@link Request#responseTime Request response time}
+     * @param responseTime
      * @param queueSize {@link MW#queue MW queue size}
      * @param misses {@link Request#nMisses Request number of misses}
      * @param size {@link Request#getSize() Request keys size}

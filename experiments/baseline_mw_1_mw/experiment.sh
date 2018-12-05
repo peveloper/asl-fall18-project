@@ -138,7 +138,7 @@ for ratio in ${RATIOS[@]}; do
             "--ratio=1:0"
             "--clients=16"
             "--key-maximum=${KEY_MAXIMUM}"
-            "--key-pattern=S:S"
+            "--key-pattern=P:P"
             "--data-size=${DATA_SIZE}"
             "--expiry-range=9999-10000")
       args=${args[@]}
@@ -148,103 +148,99 @@ for ratio in ${RATIOS[@]}; do
                    "pstefanoforaslvms1.westeurope.cloudapp.azure.com" \
                    "memtier_benchmark-master/memtier_benchmark ${args} > /dev/null 2>&1 "
 
-      KEY_MAXIMUM=9999
-
     fi;
 
     for worker_threads in ${WORKER_THREADS[@]}; do
       for vclients in ${VCLIENTS[@]}; do
-          echo "Worker Threads ${worker_threads} Virtual Clients ${vclients}"
+        echo "Worker Threads ${worker_threads} Virtual Clients ${vclients}"
 
-
-
-          echo "Starting middlewares"
-          for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
-            ip=`ssh "${mw}" "hostname -i"`
-            #echo 'ip=`ssh "${mw}" "hostname -i"`'
-            args=("-l ${ip}"
-                  "-p ${MIDDLEWARE_PORT}"
-                  "-t ${worker_threads}"
-                  "-s ${SHARDED}"
-                  "-m ${SERVER_ADDRESSES}")
-            args=${args[@]}
-
-            ssh "${mw}" "${MIDDLEWARE_CMD} ${args} > /dev/null 2>&1" &
-            #echo "ssh ${mw}" "${MIDDLEWARE_CMD} ${args} > /dev/null 2>&1" &
-          done;
-
-          echo "Waiting for middlewares to have started"
-          for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
-            ssh "${mw}" "while pgrep -f '^java.*' > /dev/null; [ $? -ne 0 ]; do sleep 1; done;"
-          done;
-
-          echo "Waiting for 8 seconds"
-          sleep 8s;
-
-
-          LOG_NAME="${LOGS_DIR}ratio${ratio}_run${run}_vclients${vclients}_workerthreads${worker_threads}"
-
+        echo "Starting middlewares"
+        for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
+          ip=`ssh "${mw}" "hostname -i"`
+          #echo 'ip=`ssh "${mw}" "hostname -i"`'
+          args=("-l ${ip}"
+                "-p ${MIDDLEWARE_PORT}"
+                "-t ${worker_threads}"
+                "-s ${SHARDED}"
+                "-m ${SERVER_ADDRESSES}")
           args=${args[@]}
 
-          run_parallel "Saving configurations" \
-                       "${INSTANCES[@]}" \
-                       "${CLIENT_HOST}" \
-                       "echo ${args} > ${LOG_NAME}_client{1}_instance{2}.conf"
+          ssh "${mw}" "${MIDDLEWARE_CMD} ${args} > /dev/null 2>&1" &
+          #echo "ssh ${mw}" "${MIDDLEWARE_CMD} ${args} > /dev/null 2>&1" &
+        done;
+
+        echo "Waiting for middlewares to have started"
+        for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
+          ssh "${mw}" "while pgrep -f '^java.*' > /dev/null; [ $? -ne 0 ]; do sleep 1; done;"
+        done;
+
+        echo "Waiting for 8 seconds"
+        sleep 8s;
 
 
-          echo "Starting benchmarks"
-          client_idx=1
-          for client in ${CLIENT_ADDRESSES[@]}; do
-            instance_idx=1
-            for mw in ${MIDDLEWARE_HOSTS[@]}; do
-              echo "Starting ${client} to ${mw}"
-              args=("--server=${mw}"
-                    "--port=${MIDDLEWARE_PORT}"
-                    "--protocol=memcache_text"
-                    "--threads=${CLIENT_THREADS}"
-                    "--test-time=${TEST_TIME}"
-                    "--ratio=${ratio}"
-                    "--clients=${vclients}"
-                    "--key-maximum=${KEY_MAXIMUM}"
-                    "--data-size=${DATA_SIZE}")
-              args=${args[@]}
+        LOG_NAME="${LOGS_DIR}ratio${ratio}_run${run}_vclients${vclients}_workerthreads${worker_threads}"
 
-              ssh ${client} "echo ${args} > ${LOG_NAME}_client${client_idx}_instance${instance_idx}.conf" &
-              ssh ${client} "memtier_benchmark-master/memtier_benchmark ${args} > ${LOG_NAME}_client${client_idx}_instance${instance_idx}.log 2>&1 " &
+        args=${args[@]}
 
-              instance_idx=$((${instance_idx} + 1))
-            done;
-            client_idx=$((${client_idx} + 1))
+        run_parallel "Saving configurations" \
+                     "${INSTANCES[@]}" \
+                     "${CLIENT_HOST}" \
+                     "echo ${args} > ${LOG_NAME}_client{1}_instance{2}.conf"
+
+
+        echo "Starting benchmarks"
+        client_idx=1
+        for client in ${CLIENT_ADDRESSES[@]}; do
+          instance_idx=1
+          for mw in ${MIDDLEWARE_HOSTS[@]}; do
+            echo "Starting ${client} to ${mw}"
+            args=("--server=${mw}"
+                  "--port=${MIDDLEWARE_PORT}"
+                  "--protocol=memcache_text"
+                  "--threads=${CLIENT_THREADS}"
+                  "--test-time=${TEST_TIME}"
+                  "--ratio=${ratio}"
+                  "--clients=${vclients}"
+                  "--key-maximum=${KEY_MAXIMUM}"
+                  "--data-size=${DATA_SIZE}")
+            args=${args[@]}
+
+            ssh ${client} "echo ${args} > ${LOG_NAME}_client${client_idx}_instance${instance_idx}.conf" &
+            ssh ${client} "memtier_benchmark-master/memtier_benchmark ${args} > ${LOG_NAME}_client${client_idx}_instance${instance_idx}.log 2>&1 " &
+
+            instance_idx=$((${instance_idx} + 1))
           done;
+          client_idx=$((${client_idx} + 1))
+        done;
 
 
-          echo "Waiting for benchmarks to finish"
-          for client in ${CLIENT_ADDRESSES[@]}; do
-            ssh "${client}" "while pgrep -f '^memtier_benchmark.*' > /dev/null; do sleep 1; done;"
-            #echo "${client}" "while pgrep -f '^memtier_benchmark.*' > /dev/null; do sleep 1; done;"
-          done;
+        echo "Waiting for benchmarks to finish"
+        for client in ${CLIENT_ADDRESSES[@]}; do
+          ssh "${client}" "while pgrep -f '^memtier_benchmark.*' > /dev/null; do sleep 1; done;"
+          #echo "${client}" "while pgrep -f '^memtier_benchmark.*' > /dev/null; do sleep 1; done;"
+        done;
 
 
 
-          run_parallel "Killing middleware" \
-                       "${MIDDLEWARES[@]}" \
-                       "${MIDDLEWARE_HOST}" \
-                       "pkill -f '^java.*'"
+        run_parallel "Killing middleware" \
+                     "${MIDDLEWARES[@]}" \
+                     "${MIDDLEWARE_HOST}" \
+                     "pkill -f '^java.*'"
 
 
-          echo "Waiting for middlewares to exit"
-          for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
-            ssh "${mw}" "while pgrep -f '^java.*' > /dev/null; do sleep 1; done;"
-            #echo "ssh ${mw}" "while pgrep -f '^java.*' > /dev/null; do sleep 1; done;"
-          done;
+        echo "Waiting for middlewares to exit"
+        for mw in ${MIDDLEWARE_ADDRESSES[@]}; do
+          ssh "${mw}" "while pgrep -f '^java.*' > /dev/null; do sleep 1; done;"
+          #echo "ssh ${mw}" "while pgrep -f '^java.*' > /dev/null; do sleep 1; done;"
+        done;
 
 
-          ADD="_ratio${ratio}_run${run}_vclients${vclients}_workerthreads${worker_threads}.log"
-          run_parallel "Renaming middleware logs" \
-                       "${MIDDLEWARES[@]}" \
-                       "${MIDDLEWARE_HOST}" \
-                       "cp '${MIDDLEWARE_LOGS_DIR}stats.log' '${LOGS_DIR}stats${ADD}' && cp '${MIDDLEWARE_LOGS_DIR}middleware.log' '${LOGS_DIR}middleware${ADD}'"
-          echo ""
+        ADD="_ratio${ratio}_run${run}_vclients${vclients}_workerthreads${worker_threads}.log"
+        run_parallel "Renaming middleware logs" \
+                     "${MIDDLEWARES[@]}" \
+                     "${MIDDLEWARE_HOST}" \
+                     "cp '${MIDDLEWARE_LOGS_DIR}stats.log' '${LOGS_DIR}stats${ADD}' && cp '${MIDDLEWARE_LOGS_DIR}middleware.log' '${LOGS_DIR}middleware${ADD}'"
+        echo ""
       done;
     done;
 

@@ -105,7 +105,7 @@ class Worker implements Runnable {
     private void orderResponse(){
         String[] splittedResponse = responseStream.toString().split("(?=VALUE)");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String[] orderedKeys =  pendingRequest.getKeys();
+        String[] orderedKeys =  this.pendingRequest.getKeys();
 
         for (String orderedKey : orderedKeys) {
             for (String response : splittedResponse) {
@@ -220,11 +220,11 @@ class Worker implements Runnable {
 
 //        MW.logger.log(Level.getLevel("INFO"), new String(buffer.array()));
 
-        if(pendingRequest.getType() == 2) {
+        if(this.pendingRequest.getType() == 2) {
             // SKIP END\r\n
             int offset = 5;
             if(buffer.get(0) == 'E') {
-                pendingRequest.increaseMisses();
+                this.pendingRequest.increaseMisses();
             }else{
                 try {
                     responseStream.write(Arrays.copyOfRange(buffer.array(), 0, buffer.capacity() - offset));
@@ -236,13 +236,13 @@ class Worker implements Runnable {
         }
 
         if(nResponses == multiRequest.size()) {
-            pendingRequest.setIncomingServiceTime();
-            if(pendingRequest.getType() == 0 || pendingRequest.getType() == 1) {
+            this.pendingRequest.setIncomingServiceTime();
+            if(this.pendingRequest.getType() == 0 || this.pendingRequest.getType() == 1) {
                 //SET / GET REPLY
-                if (pendingRequest.getType() == 1) {
+                if (this.pendingRequest.getType() == 1) {
                     // GET MISS
                     if(buffer.get(0) == 'E')
-                        pendingRequest.increaseMisses();
+                        this.pendingRequest.increaseMisses();
                 }
                 responseBuffer = ByteBuffer.wrap(buffer.array());
             }else if(buffer.get(0) == 'E'){
@@ -256,15 +256,15 @@ class Worker implements Runnable {
                 responseBuffer = ByteBuffer.wrap(responseStream.toByteArray());
             }
 
-            pendingRequest.answer(responseBuffer);
+            this.pendingRequest.answer(responseBuffer);
 
-            recordedEvents.put(System.nanoTime(), new Statistic(pendingRequest.getType(),
-                    pendingRequest.getQueueWaitingTime(), pendingRequest.getServiceTime(),
-                    pendingRequest.getResponseTime(), queue.size(), pendingRequest.getMisses(),
-                    pendingRequest.getSize()));
+            recordedEvents.put(System.nanoTime(), new Statistic(this.pendingRequest.getType(),
+                    this.pendingRequest.getQueueWaitingTime(), this.pendingRequest.getServiceTime(),
+                    this.pendingRequest.getResponseTime(), queue.size(), this.pendingRequest.getMisses(),
+                    this.pendingRequest.getSize()));
 
             MW.endTime = System.nanoTime();
-            pendingRequest = null;
+            this.pendingRequest = null;
             responseBuffer = null;
             responseStream.reset();
             multiRequest.clear();
@@ -279,7 +279,7 @@ class Worker implements Runnable {
     /**
      * @param selectionKey {@link SelectionKey} interested in WRITE.g
      *
-     * It loads a new {@link Request} if {@link #pendingRequest pendingRequest}
+     * It loads a new {@link Request} if {@link #this.pendingRequest pendingRequest}
      * is null.
      * Takes the {@link Request} corresponding to the {@link SelectionKey}
      * and writes its bytes to the memcached instance.
@@ -287,7 +287,7 @@ class Worker implements Runnable {
      */
     private void write(SelectionKey selectionKey){
 
-        if(pendingRequest == null){
+        if(this.pendingRequest == null){
             loadRequest();
         }
 
@@ -373,8 +373,9 @@ class Worker implements Runnable {
                 multiRequest.put(selectionKey, request.getBuffer());
             }
         }
-        pendingRequest = request;
-        pendingRequest.setOutgoingServiceTime();
+        this.pendingRequest = request;
+
+        this.pendingRequest.setOutgoingServiceTime();
     }
 
     /**

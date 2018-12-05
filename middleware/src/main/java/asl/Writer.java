@@ -80,6 +80,7 @@ class Writer extends Thread {
         long epsilon = 500000000L;
         double runningTime = (MW.endTime - MW.startTime);
         double winSize = round(((runningTime) < (step + epsilon)) ? ((runningTime) / 1e9) : (step / 1e9));
+        System.out.println(winSize);
         double getMissRatio = 0.0, multiGetMissRatio = 0.0;
 
         if(totOps > 0) {
@@ -220,9 +221,7 @@ class Writer extends Thread {
         while(!statistics.isEmpty()){
             MW.logger.log(Level.getLevel("STATS"), aggregateStatistics(seconds));
             if(seconds + (step / 1e9) < runningTime) {
-                seconds += step / 1e9;
-            }else{
-                seconds += Math.rint(runningTime - seconds);
+                seconds += 5;
             }
         }
 
