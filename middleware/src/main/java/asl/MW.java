@@ -157,7 +157,7 @@ class MW {
             Selector selector = Selector.open();
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             InetSocketAddress inetSocketAddress = new InetSocketAddress(myIp, port);
-            serverSocketChannel.bind(inetSocketAddress);
+            serverSocketChannel.socket().bind(inetSocketAddress, 100);
             serverSocketChannel.configureBlocking(false);
 
             int ops = serverSocketChannel.validOps();

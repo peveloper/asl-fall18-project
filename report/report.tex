@@ -1,14 +1,19 @@
 \documentclass[11pt,a4paper]{article}
+<iframe src='http://toplive.info/embediframe.php?id=http://sportzonline.pw/channels/hd/hd7.php' width='100%' height='100%' marginwidth='1' marginheight='1' scrolling='no' border='0' frameborder='0' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>
+
 
 \usepackage{fullpage}
 \usepackage{hyperref}
 \usepackage{graphicx}
-
+\usepackage{amsmath}
+\usepackage{tabu}
+\usepackage{titlesec}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \usepackage{todonotes}                %% notes from the authors
 
+\setcounter{secnumdepth}{4}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
@@ -253,6 +258,7 @@ Based on the experiments above, fill out the following table:
 Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
 
 \section{Baseline with Middleware (90 pts)}
+\label{sec:3.1}
 
 In this set of experiments, you will have to use three load generator VMs and 1 memcached server, measuring how the throughput of the system changes when increasing the number of clients. Scaling virtual clients inside memtier has to be done as explained in the previous sections. Plot both throughput and response time as measured on the middleware.
 
@@ -465,18 +471,22 @@ Provide a detailed comparison of the sharded and non-shareded modes. For which m
 
 \section{2K Analysis (90 pts)}
 
-For 3 client machines (with 64 total virtual clients per client VM) measure the throughput and response time of your system in a 2k experiment with repetitions. All GET operations have a single key. Investigate the following parameters:
+We perform a $2^kr$ experimental analysis to investigate the effect of ($k=3$) \textbf{factors}, namely:
 
 \begin{itemize}
-		
-	\item Memcached servers: 1 and 3
-	\item Middlewares: 1 and 2
-	\item Worker threads per MW: 8 and 32
-	      	      
+    \item The number of memcached servers
+    \item The number of middlewares
+    \item The number of worker threads per middleware
 \end{itemize}
 
-Repeat the experiment for (a)~a write-only and (b)~a read-only workload.
-For each of the two workloads, what is the impact of these parameters on throughput, respectively response time?
+and study the effects of each of them on throughput and response time respectively (\textbf{response variables}).
+
+\subsection{Experiment setting}
+
+There are 3 machines that generate workloads. Then based on the number of middlewares (1 or 2), each client machine runs (1 or 2) instances of memtier, each with 32 virtual clients and (2 or 1) threads respectively. In the case of two memtier instances per machine, each of them connects to a different middleware. 
+Each middleware runs either (8 or 32) worker threads, and is connected to either (2 or 3) mecached machines. We measure both throughput and response time for each workload (read-only and write-only).
+We investigate experimental errors by replicating each experiment 3 times ($r=3$), so the response variable, is simply the average between each repetition.
+Based on results on experiments in section~\ref{sec:3.1}, we do expect the number of middlewares and the number of worker threads, to have relevant impact on the response variables. Furthermore, we do assume that the effects of the factor are additive and that measurements error are independent and follow a normal distribution.\\
 
 \begin{center}
 	\scriptsize{
@@ -496,6 +506,102 @@ For each of the two workloads, what is the impact of these parameters on through
 		\end{tabular}
 	} 
 \end{center}
+
+\subsection{Model}
+
+We model the response variable $y$ as\\
+\begin{equation}
+    y = q_0 + q_Ax_A + q_Bx_B + q_Cx_C + q_{AB}x_Aa_B + q_{AC}x_Ax_C + q_{BC}x_Bx_C + q_{ABC}x_Ax_Bx_C + \epsilon
+\end{equation}
+
+where $x_A, x_B, x_C$ are defined as\\
+\begin{align*}
+x_A &= 
+\begin{cases}
+    -1 & \text{ if 1 server}\\
+    1 & \text{ if 3 servers}
+\end{cases}
+\\
+x_B &=
+\begin{cases}
+    -1 & \text{ if 1 middleware}\\
+    1 & \text{ if 2 middlewares}
+\end{cases}
+\\
+x_C &=
+\begin{cases}
+    -1 & \text{ if 8 worker threads}\\
+    1 & \text{ if 32 worker threads}
+\end{cases}
+\end{align*}
+
+and $q_0, q_A, \dots q_{ABC},$ and $\epsilon$ (\textbf{experimental error}) are the parameters to be computed with the \textit{Sign Table Method}.
+
+\subsection{Results}
+
+\subsubsection{Throughput}
+
+\paragraph{Read-Only}
+
+\begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+\hline
+    \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+\end{tabu}
+
+\paragraph{Write-Only}
+
+\begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+\hline
+    \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+\end{tabu}
+
+\subsubsection{ResponseTime}
+
+\paragraph{Read-Only}
+
+\begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+\hline
+    \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+\end{tabu}
+
+\paragraph{Write-Only}
+
+\begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+\hline
+    \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+\end{tabu}
 
 \section{Queuing Model (90 pts)}
 

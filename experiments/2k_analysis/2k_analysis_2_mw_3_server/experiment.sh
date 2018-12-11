@@ -63,7 +63,6 @@ MIDDLEWARE_ADDRESSES=(
 SERVER_ADDRESSES="10.0.0.6:${SERVER_PORT} 10.0.0.10:${SERVER_PORT} 10.0.0.7:${SERVER_PORT}"
 
 
-
 run_parallel() {
   echo -n "$1 ..."
   if $TEST
@@ -142,7 +141,7 @@ for ratio in ${RATIOS[@]}; do
             "--ratio=1:0"
             "--clients=16"
             "--key-maximum=${KEY_MAXIMUM}"
-            "--key-pattern=S:S"
+            "--key-pattern=P:P"
             "--data-size=${DATA_SIZE}"
             "--expiry-range=9999-10000")
       args=${args[@]}
@@ -151,8 +150,6 @@ for ratio in ${RATIOS[@]}; do
                    "${IPS[@]}" \
                    "pstefanoforaslvms1.westeurope.cloudapp.azure.com" \
                    "memtier_benchmark-master/memtier_benchmark ${args} > /dev/null 2>&1 "
-
-      KEY_MAXIMUM=9999
 
     fi;
 

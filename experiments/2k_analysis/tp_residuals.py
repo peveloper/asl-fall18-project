@@ -48,4 +48,4 @@ for filename, values in stuff:
         ax.set_xlim(xmin=0, xmax=9)
 
     plt.xticks(range(1, 9), ["i=" + str(i) for i in range(1, 9)])
-    plt.savefig('out/tp_' + filename + '_residuals.png', bbox_inches='tight')
+    plt.savefig('img/tp_' + filename + '_residuals.png', bbox_inches='tight')

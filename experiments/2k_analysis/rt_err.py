@@ -27,4 +27,4 @@ values = [
 for filename, errors in values:
     errors = sorted(errors)
     sm.qqplot(np.array(errors), line='s')
-    plt.savefig('out/rt_' + filename + '_qq.png', bbox_inches='tight')
+    plt.savefig('img/rt_' + filename + '_qq.png', bbox_inches='tight')

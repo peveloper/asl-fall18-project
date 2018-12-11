@@ -3,7 +3,7 @@
 TEST=false
 
 # Client Instance Middleware Server
-INSTANCES=("1 1 4\n\n2 1 4\n3 1 4")
+INSTANCES=("1 1 4\n2 1 4\n3 1 4")
 # Client 0 0 0
 CLIENTS=("1 0 0 0\n2 0 0 0\n3 0 0 0")
 # 0 0 0 Server

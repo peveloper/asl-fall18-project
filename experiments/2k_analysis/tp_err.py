@@ -26,7 +26,5 @@ values = [
 
 for filename, errors in values:
     errors = sorted(errors)
-    # fig, ax = plt.subplots()
-    # stats.probplot(errors, dist="norm", plot=plt)
     sm.qqplot(np.array(errors), line='s')
-    plt.savefig('out/tp_' + filename + '_qq.png', bbox_inches='tight')
+    plt.savefig('img/tp_' + filename + '_qq.png', bbox_inches='tight')

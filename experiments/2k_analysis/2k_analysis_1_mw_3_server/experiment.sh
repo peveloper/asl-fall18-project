@@ -3,7 +3,7 @@
 TEST=false
 
 # Client Instance Middleware Server
-INSTANCES=("1 1 4\n\n2 1 4\n3 1 4")
+INSTANCES=("1 1 4\n2 1 4\n3 1 4")
 # Client 0 0 0
 CLIENTS=("1 0 0 0\n2 0 0 0\n3 0 0 0")
 # 0 0 0 Server
@@ -139,7 +139,7 @@ for ratio in ${RATIOS[@]}; do
             "--ratio=1:0"
             "--clients=16"
             "--key-maximum=${KEY_MAXIMUM}"
-            "--key-pattern=S:S"
+            "--key-pattern=P:P"
             "--data-size=${DATA_SIZE}"
             "--expiry-range=9999-10000")
       args=${args[@]}
@@ -148,9 +148,6 @@ for ratio in ${RATIOS[@]}; do
                    "${IPS[@]}" \
                    "pstefanoforaslvms1.westeurope.cloudapp.azure.com" \
                    "memtier_benchmark-master/memtier_benchmark ${args} > /dev/null 2>&1 "
-
-      KEY_MAXIMUM=9999
-
     fi;
 
     for worker_threads in ${WORKERTHREADS[@]}; do
