@@ -1,6 +1,4 @@
 \documentclass[11pt,a4paper]{article}
-<iframe src='http://toplive.info/embediframe.php?id=http://sportzonline.pw/channels/hd/hd7.php' width='100%' height='100%' marginwidth='1' marginheight='1' scrolling='no' border='0' frameborder='0' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>
-
 
 \usepackage{fullpage}
 \usepackage{hyperref}
@@ -16,6 +14,7 @@
 \setcounter{secnumdepth}{4}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
+\newcommand{\num}[1]{\texttt{#1}}
 
 \fancypagestyle{firstpagefooter} {
 	\lfoot{\tiny{Version: 25.09.2018}}
@@ -161,6 +160,7 @@ When handling an incoming response each \texttt{Worker} does the following:
 \end{itemize}        
 
 \subsection{Statistics}
+\label{sec:1.10}
 
 As already pointed out in \ref{sec:responses}, each \texttt{Worker} collects the following statistics:
 
@@ -178,13 +178,21 @@ As already pointed out in \ref{sec:responses}, each \texttt{Worker} collects the
 
 \section{Baseline without Middleware (75 pts)}
 
-In this experiments you study the performance characteristics of the memtier clients and memcached servers.
+In these experiments we study the performance characteristics of the memtier clients and memcached servers.
 
 \subsection{One Server}
+\label{sec:2.1}
 
-Both, for a read-only and write-only workload plot the throughput and the response time as a function of NumClients. All clients are connected to a single memcached instance.
+In this, and in each of the following sections, the number of virtual clients is intended to be the total number of clients in the system, if otherwise, it is emphasized the phrase \textit{per thread}.
+Bottleneck analysis, and throughput/response time comparsions are shown in each \textit{Explanation} section of each experiment, rather than in the Summary.
+The focus on the latter is in presenting how the maximum throughput configurations are determined.
 
-Use 3 load generating VMs, with one memtier (CT=2) each, and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes as we add more clients.
+\subsubsection{Experiment Setting}
+
+There are 3 machines that generate write-only and read-only workloads. Each machine runs a single memtier instance with 2 threads, and from a minimum of 1, to 64 virtual clients \textit{per thread} (see table below).
+The number of virtual clients is the only (tunable) parameter in this setting; it is expected that by raising it, both throughput and response time should grow respectively. The reason behind it is that by raising the number of clients, the server  will spend less "idle/free time" between each successive request.
+The clients machines are connected to a server machine running a single, one-threaded, memcached instance. Each experiment runs for 70 seconds (measures take into account both warm-up and cool-down phases, excluding 10 secs), and is repeated for 3 times under the same exact conditions.
+By running this benchmark, we hope to find how much load can a single memcached instance sustain.
 
 \begin{center}
 	\scriptsize{
@@ -193,28 +201,74 @@ Use 3 load generating VMs, with one memtier (CT=2) each, and vary the number of 
 			\hline Number of client machines        & 3                        \\ 
 			\hline Instances of memtier per machine & 1                        \\ 
 			\hline Threads per memtier instance     & 2                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+			\hline Virtual clients per thread       & [1, 4, 8, 16, 24, 32, 40, 48, 64]\\ 
 			\hline Workload                         & Write-only and Read-only \\
 			\hline Multi-Get behavior               & N/A                      \\
 			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & N/A                      \\
 			\hline Worker threads per middleware    & N/A                      \\
-			\hline Repetitions                      & 3 or more                \\ 
-			\hline 
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/baseline\_no\_mw\_1\_server/} \\
+            \hline Processed Files Path             & \texttt{experiments/baseline\_no\_mw\_1\_server/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Describe in which phase the memcached servers are under-saturated, saturated, or over-saturated. Describe how throughput and response time correlate. Explain what further conclusions can be drawn from the experiment.
+The following plot shows how throughput and reponse time behave when increasing the number of virtual clients.
+The number of virtual clients on the \texttt{x-axis} of each plot represents the total number of clients in the system, e.g. the first tick at \texttt{VC=6} is the result of \texttt{1} virtual client per thread multiplied by the number of threads (\texttt{2}), instances(\texttt{1}), and client machines(\texttt{3}).
+For each quantity we plot the average measured value of the 3 repetitions, and the standard deviation from the mean as a confidence measure.
+Additionally as a sanity check, we plot the \textit{Interactive Law} as a dotted line in the troughput plots.
+In this case it is computed as the invers of the measured response time multiplied by the total number of virtual clients.
+The throughput shown below is the sum of the throughputs of each memtier instance of each client, while the response time is the average response time of each client's machine. 
 
+\subsubsection*{Read-Only}
+
+Consider the throughput below: we can see pretty clearly that, for the whole virtual clients range, apart from \texttt{VCs=6}, (in which the memcached server is still \textbf{under-saturated}), it essentially remains constant at $\approx 3000$ops/s. Suprisingly, increasing the number of virtual clients doesn't affect the throughput at all; the server is indeed saturated after 6 virtual clients. Although we have extended the range of virtual clients per thread to 64, we still cannot observe over-saturation of the server.\\
+The same exact behavior can be double checked by looking at the response time plot. It grows almost linearly, confirming the fact that the server is saturated.\\ As for now, (without additional information both on the arrival rate of requests and the service rate at which they get processed), we cannot determine the bottleneck of the sytem. Either outbound load is limited by the client's bandwidth, or the server's peak performance in reading is 3k ops/s. In Section~\ref{sec:2.2} we investigate how much workload a client machine can generate, that is the missing piece of the puzzle to conclude the bottleneck analysis.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one server (read-only)}
+  \label{fig:baseline_no_mw_1_server_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_1_server/tp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_1_server/rt_memtier_read_only.pdf}
+  }
+\end{figure}
+
+\subsubsection*{Write-Only}
+
+When testing for write-only workloads we observe a completely different behavior with respect to what seen above. Here the throughput follow our initial assumption and grows as the number of virtual clients increases. We can see that at \texttt{VCs=240} we reach saturation. We can explain the fact that we reach saturation at a much higher number of VCs compared to the read-only workload, simply because the service rate at which the server process write-only requests, is higher than when reading. This is investigated and further confirmed when measuring service time for different workloads inside the middleware in Section ~\ref{sec:3.1}.
+With no surprise, the response time plot reflects the measured throughput: we have an initial under-saturated phase until \texttt{VCs=240}, for which the rate $\dfrac{r_t}{\texttt{VC}}$ monotonically decreases.
+After that point, the rate stays almost constant, suggesting a flattening:\\\\
+$\dfrac{2.5}{24}= \approx 0.1$\\\\
+$\dfrac{4}{48}= \approx 0.08$\\\\
+$\dfrac{6}{96}= \approx 0.06$\\\\
+$\dfrac{12}{192}= \approx 0.06$\\\\
+$\dfrac{14}{240}= \approx 0.058$\\\\
+$\dfrac{22}{384}= \approx 0.057$\\\\
+In addition, by looking at the interactive law, we can observe that it follows the throughput line precisely, concluding the analysis for the experiment.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one server (write-only)}
+  \label{fig:baseline_no_mw_1_server_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_1_server/tp_memtier_write_only.pdf}
+    \includegraphics[width=0.58\textwidth]{figures/baseline_no_mw_1_server/rt_memtier_write_only.pdf}
+  }
+\end{figure}
 
 \subsection{Two Servers}
+\label{sec:2.2}
 
-For a read-only and write-only workload plot throughput and response time as a function of NumClients. The clients are connected to two memcached instances. 
+\subsubsection{Experiment Setting}
 
-Use 1 load generating VM, with one memtier (CT=1) connected to each memcached instance (two memcache instances in total), and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes and explain what conclusions we can draw from this experiment.
+There is a single client machine that generates write-only and read-only workloads. The machine runs two different memtier instances with 1 thread, and from a minimum of 1, to 32 virtual clients (see table below).
+The number of virtual clients is again, the only (tunable) parameter in this setting; it is expected that by raising it, both throughput and response time should grow accordingly. We connect each client's instance to 2 different server machines running a single, one-threaded, memcached instance. The same exact conditions on the number of repetions, duration and measurement stated before still hold. By running this benchmark, we hope to find how much load can a single memtier client produce before saturation.
 
 \begin{center}
 	\scriptsize{
@@ -223,13 +277,15 @@ Use 1 load generating VM, with one memtier (CT=1) connected to each memcached in
 			\hline Number of client machines        & 1                        \\ 
 			\hline Instances of memtier per machine & 2                        \\ 
 			\hline Threads per memtier instance     & 1                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+            \hline Virtual clients per thread       & [1, 4, 8, 16, 24, 32]    \\ 
 			\hline Workload                         & Write-only and Read-only \\
 			\hline Multi-Get behavior               & N/A                      \\
 			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & N/A                      \\
 			\hline Worker threads per middleware    & N/A                      \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/baseline\_no\_mw\_2\_server/} \\
+            \hline Processed Files Path             & \texttt{experiments/baseline\_no\_mw\_2\_server/out/memtier\_data.csv}\\
 			\hline 
 		\end{tabular}
 	} 
@@ -237,36 +293,93 @@ Use 1 load generating VM, with one memtier (CT=1) connected to each memcached in
 
 \subsubsection{Explanation}
 
-Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
+Once again we plot both throughput and response time as a function of the total number of clients. It is interesting to note how these quantities are measured. The response time is the mean response time of each memtier instance, for each client machine, for each repetition. The throughput is the sum of the throughputs measured in each instance, summed over the number of client machines, and averaged between each repetition. The error measure introduced is again the standard deviation from the mean value in all repetitions.
 
+\subsubsection*{Read-Only}
+
+The throughput presents an interesting behavior: as before, we observe that it flattens early on, at \texttt{VCs=8}, reaching saturation at $\approx$ 6k $ops/s$. From that point on, the system seems to begin to over-saturate, as the throughput slightly decrases.\\
+In Section \ref{sec:2.1} we have 3 clients connected to one server, reaching peak performance at $\approx$ 3k $ops/s$, this suggests that now that we have a single client that can read 6k $ops/s$ from two servers, that the bottleneck when reading is effectively the service rate at which a single memcached instance process incoming requests. The response time, after a sub-linear growth between the first and second virtual clients grows linearly, confirming saturation.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two servers (read-only)}
+  \label{fig:baseline_no_mw_2_server_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/tp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/rt_memtier_read_only.pdf}
+  }
+\end{figure}
+
+\subsubsection*{Write-Only}
+
+The throughput is almost identical to the read-only workload. Again a pretty fast flattening at $\num{VCs=8}$. 
+Let's compare it with the one in Section \ref{sec:2.1}: there, we have 3 clients writing to a single server, reaching an $\approx$ 18k $ops/s$ peak performance), meaning an approximate throughput per client of 6k $ops/s$.
+Now by doubling the number of servers, a single client still produces 6k $ops/s$. 
+Thus, we can conclude that the bottleneck is the maximum arrival rate of incoming write-only request from a single client machine, limited at 6k $ops/s$. 
+
+\newpage
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two servers (write-only)}
+  \label{fig:baseline_no_mw_2_server_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/tp_memtier_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/rt_memtier_write_only.pdf}
+  }
+\end{figure}
 
 \subsection{Summary}
 
-Based on the experiments above, fill out the following table:
+Following, the maximum throughput of each experiment for both write-only and read-only workload is shown.
+In order to determine what is the maximum throughput configuration, we additionally plot the rate of change of the response time over the generated load and pick the configuration from which the rate reaches an horizontal asyntote.
+Before that point the response time can grow sub-linearly, even oscillating (in the read-only case). So, we choose the first stable virtual client which rate stays almost flat for the entire range of virtual clients to represent the maximum throughput configuration in our system.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one server (Rate of change of response time over load, left: read-only, right: write-only)}
+  \label{fig:baseline_no_mw_1_server_maxtp}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_1_server/maxtp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_1_server/maxtp_memtier_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two servers (Rate of change of response time over load, left: read-only, right: write-only)}
+  \label{fig:baseline_no_mw_2_server_maxtp}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/maxtp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_no_mw_2_server/maxtp_memtier_write_only.pdf}
+  }
+\end{figure}
 
 \begin{center}
 	{Maximum throughput of different VMs.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
-		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput \\ 
-		\hline One memcached server   &                    &                     &                                     \\ 
-		\hline One load generating VM &                    &                     &                                     \\ 
+		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput  \\ 
+        \hline One memcached server   & 2.88k ops/s        & 17.5k ops/s         & 40 VCs per thread (240 total clients)\\ 
+        \hline One load generating VM & 5.87k ops/s        & 5.98k ops/s         & 4 VCs per thread (8 total clients)   \\  
 		\hline 
 	\end{tabular}
 \end{center}
 
 
-Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
-
 \section{Baseline with Middleware (90 pts)}
 \label{sec:3.1}
 
-In this set of experiments, you will have to use three load generator VMs and 1 memcached server, measuring how the throughput of the system changes when increasing the number of clients. Scaling virtual clients inside memtier has to be done as explained in the previous sections. Plot both throughput and response time as measured on the middleware.
+In this set of experiments we test the performance of the Middleware/s. 
+We measure and display the results both at the client, and inside the middleware, and compare them.
+Additionally, in order to gain a better insight on the internal performance breakdown of the middleware, and run analysis on the components, we present the statistics introduced in Section \ref{sec:1.10}.
 
 \subsection{One Middleware}
 
-Connect three load generator machines (one instance of memtier with CT=2) to a single middleware and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time measured in the middleware.
+\subsubsection{Experiment Setting}
 
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
+There are 3 clients machine generating both write-only and read-only workload. Each client machine runs a single memtier instance with 1 thread, and from a minimum of 1, to 64 virtual clients (see table below).
+Each client machine is connected to the the middleware, which is connected to a single, one-threaded, memcached machine.
+Essentially we are tuning the load the clients produce, and the service rate at which the middleware dispatches request between client and server machines. 
 
 \begin{center}
 	\scriptsize{
@@ -275,21 +388,113 @@ Repeat this experiment for different number of worker threads inside the middlew
 			\hline Number of client machines        & 3                        \\ 
 			\hline Instances of memtier per machine & 1                        \\ 
 			\hline Threads per memtier instance     & 2                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+            \hline Virtual clients per thread       & [1, 4, 8, 16, 24, 32, 64]\\ 
 			\hline Workload                         & Write-only and Read-only \\
 			\hline Multi-Get behavior               & N/A                      \\
 			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & 1                        \\
-			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
-			\hline 
+			\hline Worker threads per middleware    & [8, 16, 32, 64]                  \\
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/baseline\_mw\_1\_mw/logs} \\
+            \hline Processed Files Path             & \texttt{experiments/baseline\_mw\_1\_mw/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+We plot throughput and response time as measured at the client and inside the middleware, for an increasing number of both virtual clients and  worker threads.\\
+The measurements conducted in the middleware are grouped in five-seconds windows for a total of 14 per experiment ($ 70.0 / 5.0 = 14$). Everytime a request has been processed, and a response has been sent back to the client machines, the measurements for the specific request, and a snapshot of the system components, gets saved and later, processed and logged.\\
+Measurements taken inside the middleware, do not include the latency between the client machines and the middleware, so there's a gap between the two, that remains constant and negligible ($\approx 2 ms$).
+
+\subsubsection*{Read-Only}
+
+As in Section \ref{sec:2.1}, the throughput plot shows a flattening at $\approx$ 3k $op/s$ starting from \texttt{VCs=24}.  The presence of the middleware doesn't seem to affect the performance at all, moreover we cannot spot any differences when changing the number of worker threads inside the middleware. The unique possible explanation, (as we can exclude the fact that the client machines are the bottleneck, from what we have concluded in \ref{sec:2.3}), is again. the fact that a single memcached machine cannot process more than $\approx$ 3k $ops/s$ incoming read-only requests. 
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one Middleware (read-only CLIENT)}
+  \label{fig:baseline_mw_1_mw_mt_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/tp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/rt_memtier_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with one Middleware (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/tp_middleware_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/rt_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with one Middleware, Service Time and Queue Waiting Time (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_c_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/st_middleware_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/wt_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with one Middleware (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/qs_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\subsubsection*{Write-Only}
+
+As expected, increasing the number of worker threads in the middleware, results in an increase of the throughput. Even though, for every distinct worker thread configuration, we observe a distinct throughput behavior, there's a common treat that each configuration seems to manifest. In fact we can clearly identify and split the plot in two phases: one that goes from 6 to 192 \texttt{VCs}, and another one, that goes from 192 to 384 \texttt{VCs}. 
+In the former (under-saturated phase), the configurations with 16, 32 and 64 workers, behave almost identically (apart from when we reach \texttt{VCs=96}, where we observe a difference of $\approx$ 500-600 $ops/s$).
+The latter phase shows a much larger difference in performance for different worker threads configuration. We observe a clear distinction between 8 and 16 worker threads, and between 16 and 32, but not as much between 32 and 64 worker threads. 
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one Middleware (write-only CLIENT)}
+  \label{fig:baseline_mw_1_mw_mt_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/tp_memtier_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/rt_memtier_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one Middleware (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/tp_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/rt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with one Middleware, Service Time and Queue Waiting Time (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_c_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/st_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/wt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with one Middleware, Average Queue Size (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_1_mw_mw_qs_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_1_mw/qs_middleware_write_only.pdf}
+  }
+\end{figure}
 
 \subsection{Two Middlewares}
 

@@ -1,207 +1,0 @@
-[RUN #1] Preparing benchmark client...
-[RUN #1] Launching threads now...
-[RUN #1 1%,   0 secs]  2 threads:        4226 ops,    5051 (avg:    5051) ops/sec, 19.91MB/sec (avg: 19.91MB/sec),  3.13 (avg:  3.13) msec latency[RUN #1 3%,   1 secs]  2 threads:        9439 ops,    5212 (avg:    5139) ops/sec, 20.54MB/sec (avg: 20.26MB/sec),  3.09 (avg:  3.11) msec latency[RUN #1 4%,   2 secs]  2 threads:       14620 ops,    5180 (avg:    5153) ops/sec, 20.42MB/sec (avg: 20.31MB/sec),  3.07 (avg:  3.10) msec latency[RUN #1 5%,   3 secs]  2 threads:       19957 ops,    5336 (avg:    5201) ops/sec, 21.03MB/sec (avg: 20.50MB/sec),  3.01 (avg:  3.07) msec latency[RUN #1 7%,   5 secs]  2 threads:       26625 ops,    5275 (avg:    5219) ops/sec, 20.79MB/sec (avg: 20.57MB/sec),  3.03 (avg:  3.06) msec latency[RUN #1 9%,   6 secs]  2 threads:       32109 ops,    5483 (avg:    5262) ops/sec, 21.61MB/sec (avg: 20.74MB/sec),  2.90 (avg:  3.03) msec latency[RUN #1 10%,   7 secs]  2 threads:       37364 ops,    5254 (avg:    5261) ops/sec, 20.71MB/sec (avg: 20.74MB/sec),  3.04 (avg:  3.03) msec latency[RUN #1 12%,   8 secs]  2 threads:       42760 ops,    5395 (avg:    5278) ops/sec, 21.27MB/sec (avg: 20.80MB/sec),  2.96 (avg:  3.03) msec latency[RUN #1 13%,   9 secs]  2 threads:       47949 ops,    5188 (avg:    5268) ops/sec, 20.45MB/sec (avg: 20.76MB/sec),  3.08 (avg:  3.03) msec latency[RUN #1 14%,  10 secs]  2 threads:       53161 ops,    5211 (avg:    5262) ops/sec, 20.54MB/sec (avg: 20.74MB/sec),  3.07 (avg:  3.04) msec latency[RUN #1 16%,  11 secs]  2 threads:       58570 ops,    5408 (avg:    5275) ops/sec, 21.32MB/sec (avg: 20.79MB/sec),  2.96 (avg:  3.03) msec latency[RUN #1 17%,  12 secs]  2 threads:       63831 ops,    5260 (avg:    5274) ops/sec, 20.73MB/sec (avg: 20.79MB/sec),  3.04 (avg:  3.03) msec latency[RUN #1 19%,  13 secs]  2 threads:       69104 ops,    5267 (avg:    5274) ops/sec, 20.76MB/sec (avg: 20.79MB/sec),  3.02 (avg:  3.03) msec latency[RUN #1 20%,  14 secs]  2 threads:       74370 ops,    5265 (avg:    5273) ops/sec, 20.75MB/sec (avg: 20.78MB/sec),  3.05 (avg:  3.03) msec latency[RUN #1 22%,  15 secs]  2 threads:       79529 ops,    5158 (avg:    5265) ops/sec, 20.33MB/sec (avg: 20.75MB/sec),  3.09 (avg:  3.03) msec latency[RUN #1 23%,  16 secs]  2 threads:       85053 ops,    5520 (avg:    5281) ops/sec, 21.76MB/sec (avg: 20.82MB/sec),  2.90 (avg:  3.03) msec latency[RUN #1 24%,  17 secs]  2 threads:       90304 ops,    5250 (avg:    5279) ops/sec, 20.69MB/sec (avg: 20.81MB/sec),  3.03 (avg:  3.03) msec latency[RUN #1 26%,  18 secs]  2 threads:       95533 ops,    5228 (avg:    5276) ops/sec, 20.61MB/sec (avg: 20.80MB/sec),  3.07 (avg:  3.03) msec latency[RUN #1 27%,  19 secs]  2 threads:      100827 ops,    5293 (avg:    5277) ops/sec, 20.86MB/sec (avg: 20.80MB/sec),  3.01 (avg:  3.03) msec latency[RUN #1 29%,  20 secs]  2 threads:      106132 ops,    5304 (avg:    5279) ops/sec, 20.91MB/sec (avg: 20.81MB/sec),  3.02 (avg:  3.03) msec latency[RUN #1 30%,  21 secs]  2 threads:      111216 ops,    5083 (avg:    5269) ops/sec, 20.04MB/sec (avg: 20.77MB/sec),  3.14 (avg:  3.03) msec latency[RUN #1 32%,  22 secs]  2 threads:      116738 ops,    5521 (avg:    5281) ops/sec, 21.76MB/sec (avg: 20.82MB/sec),  2.89 (avg:  3.03) msec latency[RUN #1 33%,  23 secs]  2 threads:      121872 ops,    5133 (avg:    5274) ops/sec, 20.23MB/sec (avg: 20.79MB/sec),  3.11 (avg:  3.03) msec latency[RUN #1 34%,  24 secs]  2 threads:      126694 ops,    4821 (avg:    5255) ops/sec, 19.00MB/sec (avg: 20.72MB/sec),  3.33 (avg:  3.04) msec latency[RUN #1 36%,  25 secs]  2 threads:      131713 ops,    5018 (avg:    5246) ops/sec, 19.78MB/sec (avg: 20.68MB/sec),  3.16 (avg:  3.05) msec latency[RUN #1 37%,  26 secs]  2 threads:      137057 ops,    5343 (avg:    5250) ops/sec, 21.06MB/sec (avg: 20.69MB/sec),  3.00 (avg:  3.04) msec latency[RUN #1 39%,  27 secs]  2 threads:      142048 ops,    4990 (avg:    5240) ops/sec, 19.67MB/sec (avg: 20.66MB/sec),  3.20 (avg:  3.05) msec latency[RUN #1 40%,  28 secs]  2 threads:      147097 ops,    5048 (avg:    5233) ops/sec, 19.90MB/sec (avg: 20.63MB/sec),  3.18 (avg:  3.05) msec latency[RUN #1 42%,  29 secs]  2 threads:      152321 ops,    5223 (avg:    5233) ops/sec, 20.59MB/sec (avg: 20.63MB/sec),  3.05 (avg:  3.05) msec latency[RUN #1 43%,  30 secs]  2 threads:      155358 ops,    3036 (avg:    5160) ops/sec, 11.97MB/sec (avg: 20.34MB/sec),  3.99 (avg:  3.07) msec latency[RUN #1 44%,  31 secs]  2 threads:      158034 ops,    2675 (avg:    5080) ops/sec, 10.55MB/sec (avg: 20.02MB/sec),  7.45 (avg:  3.15) msec latency[RUN #1 46%,  32 secs]  2 threads:      163143 ops,    5108 (avg:    5081) ops/sec, 20.13MB/sec (avg: 20.03MB/sec),  3.13 (avg:  3.15) msec latency[RUN #1 47%,  33 secs]  2 threads:      168408 ops,    5264 (avg:    5086) ops/sec, 20.75MB/sec (avg: 20.05MB/sec),  3.03 (avg:  3.14) msec latency[RUN #1 49%,  34 secs]  2 threads:      173523 ops,    5114 (avg:    5087) ops/sec, 20.16MB/sec (avg: 20.05MB/sec),  3.12 (avg:  3.14) msec latency[RUN #1 50%,  35 secs]  2 threads:      178800 ops,    5276 (avg:    5093) ops/sec, 20.80MB/sec (avg: 20.07MB/sec),  3.03 (avg:  3.14) msec latency[RUN #1 52%,  36 secs]  2 threads:      184098 ops,    5297 (avg:    5098) ops/sec, 20.88MB/sec (avg: 20.10MB/sec),  3.02 (avg:  3.13) msec latency[RUN #1 53%,  37 secs]  2 threads:      189369 ops,    5270 (avg:    5103) ops/sec, 20.77MB/sec (avg: 20.11MB/sec),  3.04 (avg:  3.13) msec latency[RUN #1 54%,  38 secs]  2 threads:      194235 ops,    4865 (avg:    5097) ops/sec, 19.18MB/sec (avg: 20.09MB/sec),  3.27 (avg:  3.13) msec latency[RUN #1 56%,  39 secs]  2 threads:      199539 ops,    5301 (avg:    5102) ops/sec, 20.89MB/sec (avg: 20.11MB/sec),  3.02 (avg:  3.13) msec latency[RUN #1 57%,  40 secs]  2 threads:      203757 ops,    4217 (avg:    5080) ops/sec, 16.62MB/sec (avg: 20.02MB/sec),  3.80 (avg:  3.15) msec latency[RUN #1 59%,  41 secs]  2 threads:      209127 ops,    5369 (avg:    5087) ops/sec, 21.16MB/sec (avg: 20.05MB/sec),  2.98 (avg:  3.14) msec latency[RUN #1 60%,  42 secs]  2 threads:      214220 ops,    5092 (avg:    5087) ops/sec, 20.07MB/sec (avg: 20.05MB/sec),  3.14 (avg:  3.14) msec latency[RUN #1 62%,  43 secs]  2 threads:      219250 ops,    5029 (avg:    5086) ops/sec, 19.82MB/sec (avg: 20.05MB/sec),  3.17 (avg:  3.14) msec latency[RUN #1 63%,  44 secs]  2 threads:      224246 ops,    4995 (avg:    5084) ops/sec, 19.69MB/sec (avg: 20.04MB/sec),  3.21 (avg:  3.14) msec latency[RUN #1 64%,  45 secs]  2 threads:      229511 ops,    5264 (avg:    5088) ops/sec, 20.75MB/sec (avg: 20.05MB/sec),  3.05 (avg:  3.14) msec latency[RUN #1 66%,  46 secs]  2 threads:      234565 ops,    5053 (avg:    5087) ops/sec, 19.92MB/sec (avg: 20.05MB/sec),  3.15 (avg:  3.14) msec latency[RUN #1 67%,  47 secs]  2 threads:      239824 ops,    5258 (avg:    5090) ops/sec, 20.73MB/sec (avg: 20.07MB/sec),  3.04 (avg:  3.14) msec latency[RUN #1 69%,  48 secs]  2 threads:      245032 ops,    5207 (avg:    5093) ops/sec, 20.52MB/sec (avg: 20.08MB/sec),  3.08 (avg:  3.14) msec latency[RUN #1 70%,  49 secs]  2 threads:      250309 ops,    5276 (avg:    5097) ops/sec, 20.80MB/sec (avg: 20.09MB/sec),  3.02 (avg:  3.14) msec latency[RUN #1 72%,  50 secs]  2 threads:      255451 ops,    5141 (avg:    5097) ops/sec, 20.26MB/sec (avg: 20.09MB/sec),  3.11 (avg:  3.14) msec latency[RUN #1 73%,  51 secs]  2 threads:      260733 ops,    5281 (avg:    5101) ops/sec, 20.82MB/sec (avg: 20.11MB/sec),  3.03 (avg:  3.13) msec latency[RUN #1 74%,  52 secs]  2 threads:      265706 ops,    4972 (avg:    5099) ops/sec, 19.60MB/sec (avg: 20.10MB/sec),  3.21 (avg:  3.13) msec latency[RUN #1 76%,  53 secs]  2 threads:      270638 ops,    4931 (avg:    5095) ops/sec, 19.44MB/sec (avg: 20.09MB/sec),  3.23 (avg:  3.14) msec latency[RUN #1 77%,  54 secs]  2 threads:      275535 ops,    4896 (avg:    5092) ops/sec, 19.30MB/sec (avg: 20.07MB/sec),  3.27 (avg:  3.14) msec latency[RUN #1 79%,  55 secs]  2 threads:      280649 ops,    5113 (avg:    5092) ops/sec, 20.15MB/sec (avg: 20.07MB/sec),  3.11 (avg:  3.14) msec latency[RUN #1 80%,  56 secs]  2 threads:      286068 ops,    5417 (avg:    5098) ops/sec, 21.35MB/sec (avg: 20.09MB/sec),  2.97 (avg:  3.13) msec latency[RUN #1 82%,  57 secs]  2 threads:      291401 ops,    5332 (avg:    5102) ops/sec, 21.02MB/sec (avg: 20.11MB/sec),  3.00 (avg:  3.13) msec latency[RUN #1 83%,  58 secs]  2 threads:      296663 ops,    5261 (avg:    5105) ops/sec, 20.74MB/sec (avg: 20.12MB/sec),  3.03 (avg:  3.13) msec latency[RUN #1 84%,  59 secs]  2 threads:      301822 ops,    5156 (avg:    5106) ops/sec, 20.32MB/sec (avg: 20.13MB/sec),  3.10 (avg:  3.13) msec latency[RUN #1 86%,  60 secs]  2 threads:      305335 ops,    3512 (avg:    5079) ops/sec, 13.84MB/sec (avg: 20.02MB/sec),  4.56 (avg:  3.15) msec latency[RUN #1 87%,  61 secs]  2 threads:      309377 ops,    4041 (avg:    5062) ops/sec, 15.93MB/sec (avg: 19.95MB/sec),  3.96 (avg:  3.16) msec latency[RUN #1 89%,  62 secs]  2 threads:      314416 ops,    5038 (avg:    5062) ops/sec, 19.86MB/sec (avg: 19.95MB/sec),  3.17 (avg:  3.16) msec latency[RUN #1 90%,  63 secs]  2 threads:      319533 ops,    5116 (avg:    5063) ops/sec, 20.17MB/sec (avg: 19.96MB/sec),  3.11 (avg:  3.16) msec latency[RUN #1 92%,  64 secs]  2 threads:      324379 ops,    4845 (avg:    5059) ops/sec, 19.10MB/sec (avg: 19.94MB/sec),  3.30 (avg:  3.16) msec latency[RUN #1 93%,  65 secs]  2 threads:      330541 ops,    6158 (avg:    5076) ops/sec, 24.28MB/sec (avg: 20.01MB/sec),  2.60 (avg:  3.15) msec latency[RUN #1 94%,  66 secs]  2 threads:      335671 ops,    5129 (avg:    5077) ops/sec, 20.22MB/sec (avg: 20.01MB/sec),  3.11 (avg:  3.15) msec latency[RUN #1 96%,  67 secs]  2 threads:      340775 ops,    5101 (avg:    5077) ops/sec, 20.11MB/sec (avg: 20.01MB/sec),  3.14 (avg:  3.15) msec latency[RUN #1 97%,  68 secs]  2 threads:      345416 ops,    4640 (avg:    5071) ops/sec, 18.29MB/sec (avg: 19.99MB/sec),  3.43 (avg:  3.15) msec latency[RUN #1 99%,  69 secs]  2 threads:      350420 ops,    5003 (avg:    5070) ops/sec, 19.72MB/sec (avg: 19.98MB/sec),  3.21 (avg:  3.15) msec latency[RUN #1 100%,  70 secs]  0 threads:      354959 ops,    5003 (avg:    5070) ops/sec, 19.72MB/sec (avg: 19.99MB/sec),  3.21 (avg:  3.15) msec latency
-
-2         Threads
-8         Connections per thread
-70        Seconds
-
-
-ALL STATS
-========================================================================
-Type        Ops/sec     Hits/sec   Misses/sec      Latency       KB/sec 
-------------------------------------------------------------------------
-Sets        5070.81          ---          ---      3.15100     20465.94 
-Gets           0.00         0.00         0.00      0.00000         0.00 
-Waits          0.00          ---          ---      0.00000          --- 
-Totals      5070.81         0.00         0.00      3.15100     20465.94 
-
-
-Request Latency Distribution
-Type     <= msec         Percent
-------------------------------------------------------------------------
-SET       0.310         0.00
-SET       0.340         0.00
-SET       0.350         0.00
-SET       0.360         0.00
-SET       0.370         0.01
-SET       0.380         0.01
-SET       0.390         0.01
-SET       0.400         0.02
-SET       0.410         0.02
-SET       0.420         0.03
-SET       0.430         0.04
-SET       0.440         0.06
-SET       0.450         0.08
-SET       0.460         0.10
-SET       0.470         0.13
-SET       0.480         0.17
-SET       0.490         0.21
-SET       0.500         0.27
-SET       0.510         0.33
-SET       0.520         0.39
-SET       0.530         0.48
-SET       0.540         0.58
-SET       0.550         0.69
-SET       0.560         0.82
-SET       0.570         0.94
-SET       0.580         1.07
-SET       0.590         1.22
-SET       0.600         1.41
-SET       0.610         1.58
-SET       0.620         1.76
-SET       0.630         1.94
-SET       0.640         2.13
-SET       0.650         2.34
-SET       0.660         2.51
-SET       0.670         2.71
-SET       0.680         2.92
-SET       0.690         3.12
-SET       0.700         3.33
-SET       0.710         3.56
-SET       0.720         3.79
-SET       0.730         4.02
-SET       0.740         4.25
-SET       0.750         4.48
-SET       0.760         4.74
-SET       0.770         5.01
-SET       0.780         5.30
-SET       0.790         5.59
-SET       0.800         5.92
-SET       0.810         6.23
-SET       0.820         6.56
-SET       0.830         6.91
-SET       0.840         7.26
-SET       0.850         7.65
-SET       0.860         8.05
-SET       0.870         8.47
-SET       0.880         8.89
-SET       0.890         9.33
-SET       0.900         9.76
-SET       0.910        10.22
-SET       0.920        10.69
-SET       0.930        11.14
-SET       0.940        11.62
-SET       0.950        12.11
-SET       0.960        12.60
-SET       0.970        13.10
-SET       0.980        13.63
-SET       0.990        14.18
-SET       1.000        17.25
-SET       1.100        23.07
-SET       1.200        29.09
-SET       1.300        35.17
-SET       1.400        41.08
-SET       1.500        46.50
-SET       1.600        51.21
-SET       1.700        55.33
-SET       1.800        58.97
-SET       1.900        62.02
-SET       2.000        64.62
-SET       2.100        66.84
-SET       2.200        68.54
-SET       2.300        69.86
-SET       2.400        70.88
-SET       2.500        71.68
-SET       2.600        72.33
-SET       2.700        72.80
-SET       2.800        73.20
-SET       2.900        73.51
-SET       3.000        73.79
-SET       3.100        74.01
-SET       3.200        74.19
-SET       3.300        74.34
-SET       3.400        74.45
-SET       3.500        74.56
-SET       3.600        74.66
-SET       3.700        74.77
-SET       3.800        74.87
-SET       3.900        74.97
-SET       4.000        75.05
-SET       4.100        75.13
-SET       4.200        75.19
-SET       4.300        75.25
-SET       4.400        75.31
-SET       4.500        75.36
-SET       4.600        75.42
-SET       4.700        75.48
-SET       4.800        75.54
-SET       4.900        75.60
-SET       5.000        75.65
-SET       5.100        75.71
-SET       5.200        75.75
-SET       5.300        75.81
-SET       5.400        75.87
-SET       5.500        75.93
-SET       5.600        75.97
-SET       5.700        76.02
-SET       5.800        76.07
-SET       5.900        76.13
-SET       6.000        76.20
-SET       6.100        76.27
-SET       6.200        76.36
-SET       6.300        76.45
-SET       6.400        76.57
-SET       6.500        76.73
-SET       6.600        76.91
-SET       6.700        77.14
-SET       6.800        77.46
-SET       6.900        77.85
-SET       7.000        78.34
-SET       7.100        78.97
-SET       7.200        79.69
-SET       7.300        80.59
-SET       7.400        81.60
-SET       7.500        82.70
-SET       7.600        83.81
-SET       7.700        85.10
-SET       7.800        86.33
-SET       7.900        87.66
-SET       8.000        89.00
-SET       8.100        90.35
-SET       8.200        91.54
-SET       8.300        92.65
-SET       8.400        93.69
-SET       8.500        94.67
-SET       8.600        95.56
-SET       8.700        96.34
-SET       8.800        96.99
-SET       8.900        97.50
-SET       9.000        97.91
-SET       9.100        98.26
-SET       9.200        98.54
-SET       9.300        98.78
-SET       9.400        98.95
-SET       9.500        99.09
-SET       9.600        99.19
-SET       9.700        99.27
-SET       9.800        99.33
-SET       9.900        99.38
-SET      10.000        99.63
-SET      11.000        99.75
-SET      12.000        99.80
-SET      13.000        99.83
-SET      14.000        99.85
-SET      15.000        99.86
-SET      16.000        99.86
-SET      17.000        99.90
-SET      18.000        99.94
-SET      19.000        99.94
-SET      20.000        99.95
-SET      21.000        99.95
-SET      22.000        99.95
-SET      44.000        99.95
-SET      46.000        99.95
-SET      61.000        99.96
-SET      62.000        99.96
-SET      63.000        99.96
-SET      64.000        99.97
-SET      65.000        99.97
-SET      72.000        99.98
-SET     100.000        99.98
-SET     130.000        99.99
-SET     260.000        99.99
-SET     290.000       100.00
-SET     450.000       100.00
----
----
