@@ -23,7 +23,7 @@ CLIENT_THREADS=2
 TEST_TIME=70
 
 VCLIENTS=(32)
-RATIOS=("1:0" "0:1")
+RATIOS=("0:1")
 REPETITIONS=3
 WORKERTHREADS=(8 32)
 SHARDED="false"
@@ -58,7 +58,7 @@ MIDDLEWARE_ADDRESSES=(
   "pstefanoforaslvms4.westeurope.cloudapp.azure.com"
 )
 
-SERVER_ADDRESSES="10.0.0.6:${SERVER_PORT} 10.0.0.7:${SERVER_PORT} 10.0.0.10:${SERVER_PORT}"
+SERVER_ADDRESSES="10.0.0.6:${SERVER_PORT} 10.0.0.10:${SERVER_PORT} 10.0.0.7:${SERVER_PORT}"
 
 
 run_parallel() {
@@ -125,7 +125,7 @@ for ratio in ${RATIOS[@]}; do
     run_parallel "Starting memcached on servers" \
                  "${SERVERS[@]}" \
                  "${SERVER_HOST}" \
-                 "memcached -p ${SERVER_PORT} -t 1 > /dev/null 2>&1 &"
+                 "memcached -p ${SERVER_PORT} -t 1 -vvv > prova.txt 2>&1 &"
 
     # Do not populate for write-only workload
     if [ $ratio != "1:0" ];

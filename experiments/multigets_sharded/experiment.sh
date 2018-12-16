@@ -23,7 +23,7 @@ CLIENT_THREADS=1
 TEST_TIME=70
 
 VCLIENTS=(2)
-RATIOS=("1:1")
+RATIOS=("1:1" "1:3" "1:6" "1:9")
 REPETITIONS=3
 workerthreads=64
 SHARDED="true"
@@ -122,10 +122,11 @@ run_parallel "Stopping middlewares" \
 
 for ratio in ${RATIOS[@]}; do
   key_size=${ratio: -1}
-  if [ $key_size != "1" ];
-  then
-    ratio="1:$(($key_size * 3))"
-  fi;
+
+  #if [ $key_size != "1" ];
+  #then
+    #ratio="1:$(($key_size * 3))"
+  #fi;
 
   for run in `seq 1 ${REPETITIONS}`; do
     echo "Repetition ${run}  Ratio ${ratio}"
@@ -148,7 +149,7 @@ for ratio in ${RATIOS[@]}; do
             "--ratio=1:0"
             "--clients=16"
             "--key-maximum=${KEY_MAXIMUM}"
-            "--key-pattern=S:S"
+            "--key-pattern=P:P"
             "--data-size=${DATA_SIZE}"
             "--expiry-range=9999-10000")
       args=${args[@]}
@@ -157,8 +158,6 @@ for ratio in ${RATIOS[@]}; do
                    "${IPS[@]}" \
                    "pstefanoforaslvms1.westeurope.cloudapp.azure.com" \
                    "memtier_benchmark-master/memtier_benchmark ${args} > /dev/null 2>&1 "
-
-      KEY_MAXIMUM=9999
 
     fi;
 

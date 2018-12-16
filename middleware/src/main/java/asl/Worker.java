@@ -279,7 +279,7 @@ class Worker implements Runnable {
     /**
      * @param selectionKey {@link SelectionKey} interested in WRITE.g
      *
-     * It loads a new {@link Request} if {@link #this.pendingRequest pendingRequest}
+     * It loads a new {@link Request} if
      * is null.
      * Takes the {@link Request} corresponding to the {@link SelectionKey}
      * and writes its bytes to the memcached instance.
@@ -367,6 +367,7 @@ class Worker implements Runnable {
             }
         }else if(request.getType() == 1 || (request.getType() == 2 && !readSharded)){
             SelectionKey selectionKey = mcSocketChannelKeys.get(mcAddresses.get(getServerFromKey(request.getKeys()[0])));
+            System.out.println((request.getKeys()[0]));
             multiRequest.put(selectionKey, request.getBuffer());
         }else{
             for(SelectionKey selectionKey: selector.keys()){

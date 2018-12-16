@@ -1,12 +1,14 @@
 \documentclass[11pt,a4paper]{article}
 
 \usepackage{fullpage}
+\usepackage{listings}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{tabu}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
+\usepackage{color}
 \pagestyle{fancy}
 \fancyhf{}
 \usepackage{todonotes}                %% notes from the authors
@@ -21,6 +23,14 @@
 	\cfoot{}
 	\rfoot{\thepage}
 	
+}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+
+\lstset{
+   basicstyle=\fontsize{9}{11}\selectfont\ttfamily,
+   language=Python,
+   commentstyle=\color{mygreen},    % comment style
 }
 
 \lfoot{Name: Stefano Peverelli Legi: 19-980-396}
@@ -365,6 +375,8 @@ Before that point the response time can grow sub-linearly, even oscillating (in 
 	\end{tabular}
 \end{center}
 
+When performing write-only operations, each client machine cannot issue more than $\approx$ 6k $ops/s$. Given that the object size is \texttt{4096B}, the maximum throughput achievable is approximately 24 MB/s.
+When reading data from the memcached servers, the bottleneck is given by the number of operations a server sends back to the client. Benchmarks indicate that a single memcached machine cannot send more than $\approx$ 3k $ops/s$, or 12 MB/s.
 
 \section{Baseline with Middleware (90 pts)}
 \label{sec:3.1}
@@ -410,7 +422,7 @@ Measurements taken inside the middleware, do not include the latency between the
 
 \subsubsection*{Read-Only}
 
-As in Section \ref{sec:2.1}, the throughput plot shows a flattening at $\approx$ 3k $op/s$ starting from \texttt{VCs=24}.  The presence of the middleware doesn't seem to affect the performance at all, moreover we cannot spot any differences when changing the number of worker threads inside the middleware. The unique possible explanation, (as we can exclude the fact that the client machines are the bottleneck, from what we have concluded in \ref{sec:2.3}), is again. the fact that a single memcached machine cannot process more than $\approx$ 3k $ops/s$ incoming read-only requests. 
+As in Section \ref{sec:2.1}, the throughput plot shows a flattening at $\approx$ 3k $op/s$ starting from \texttt{VCs=24}.  The presence of the middleware doesn't seem to affect the performance at all, moreover we cannot spot any differences when changing the number of worker threads inside the middleware. The unique possible explanation, (as we can exclude the fact that the client machines are the bottleneck, from what we have concluded in \ref{sec:2.3}), is again. the fact that a single memcached machine cannot send back more than 3k $ops/s$ of read-only requests.
 
 \begin{figure}[!h]
   \centering
@@ -455,7 +467,8 @@ As in Section \ref{sec:2.1}, the throughput plot shows a flattening at $\approx$
 
 As expected, increasing the number of worker threads in the middleware, results in an increase of the throughput. Even though, for every distinct worker thread configuration, we observe a distinct throughput behavior, there's a common treat that each configuration seems to manifest. In fact we can clearly identify and split the plot in two phases: one that goes from 6 to 192 \texttt{VCs}, and another one, that goes from 192 to 384 \texttt{VCs}. 
 In the former (under-saturated phase), the configurations with 16, 32 and 64 workers, behave almost identically (apart from when we reach \texttt{VCs=96}, where we observe a difference of $\approx$ 500-600 $ops/s$).
-The latter phase shows a much larger difference in performance for different worker threads configuration. We observe a clear distinction between 8 and 16 worker threads, and between 16 and 32, but not as much between 32 and 64 worker threads. 
+The latter phase (saturated) shows a much larger difference in performance for different worker threads configurations. We observe a clear distinction between 8 and 16 worker threads, and between 16 and 32, but not as much between 32 and 64 worker threads. 
+Comparing this plot to the one in Section \ref{sec:2.1}, we can cleary see that the presence of the middleware seems to have an impact on the throughput (saturation starts at 12k $ops/s$, before $\approx$ 18k ops/s). The difference is around 30\%.
 
 \begin{figure}[!h]
   \centering
@@ -498,9 +511,10 @@ The latter phase shows a much larger difference in performance for different wor
 
 \subsection{Two Middlewares}
 
-Connect three load generator machines (two instances of memtier with CT=1) to two middlewares and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time as measured in the middleware.
+\subsection{Experiment Setting}
 
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
+This experiment is similar to the previous one, apart from the fact that here we introduce a new middleware machine.
+Again, we have 3 load generating machines that run 2 single-threaded instances of memtier. Each instance connects to a different middleware, which itself, connects to one single-threaded memcached machine. Also in this experiment, we change the number of worker threads inside the middlewares to see how that impacts the overall performance.
 
 \begin{center}
 	\scriptsize{
@@ -509,35 +523,135 @@ Repeat this experiment for different number of worker threads inside the middlew
 			\hline Number of client machines        & 3                        \\ 
 			\hline Instances of memtier per machine & 2                        \\ 
 			\hline Threads per memtier instance     & 1                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+			\hline Virtual clients per thread       & [1, 4, 8, 16, 32, 64]                  \\ 
 			\hline Workload                         & Write-only and Read-only \\
 			\hline Multi-Get behavior               & N/A                      \\
 			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & 2                        \\
-			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
-			\hline 
+			\hline Worker threads per middleware    & [8, 16, 32, 64]                  \\
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/baseline\_mw\_2\_mw/logs} \\
+            \hline Processed Files Path             & \texttt{experiments/baseline\_mw\_2\_mw/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+We plot throughput and response time as measured at the client and inside the middleware, for an increasing number of both virtual clients and  worker threads.\\
+The same conditions on the measuerements presented in Section \ref{sec:3.1}, still hold. Here, we need to take into account the fact that we have an additional middleware, thus any measure done in one middleware needs to be properly treated. By this we mean that depending on the measurement that we are analyzing, we might either take the  average between the two Middlewares (e.g. response time, service time, and queue waiting time), or some over (e.g. throughput).
+It is relevant to mention how such measures are computed, because, as we will see, they might be source for minor imprecisions in the plots.
+
+\subsubsection*{Read-Only}
+
+The client throughput seems to reflect the behavior seen in Section \ref{sec:2.1}, showing a flattening at $\approx$ 3k $op/s$ starting from \texttt{VCs=24}. If we look at the middleware plot, we still observe the same behavior, this time though, we observe a difference between 8 and 16 worker threads, and between them and 32 and 64. The configurations with 8 and 16 worker threads, exceed 3k $ops/s$. Now, we know that that's not possible, the reason for that is again that when reading we are limited by the memcached server at 3k $ops/s$. This is due to both the fact that time measurements inside the middleware are smaller than the one measured by the clients, and to the systematic error introduced when taking the average between the two.
+The difference between the clients and the middlewares plots can be spotted also by looking at their response time/load. In the one measured by the clients, every worker thread configuration is collinear, whereas in the middleware, we have distinct lines for 8 and 16 workers: indeed their value is lower, causing the throughput to grow and pass the 3k $ops/s$ barrier.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two Middlewares (read-only CLIENT)}
+  \label{fig:baseline_mw_2_mw_mt_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/tp_memtier_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/rt_memtier_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with two Middlewares (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/tp_middleware_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/rt_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with two Middlewares, Service Time and Queue Waiting Time (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_c_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/st_middleware_read_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/wt_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with two Middlewares (read-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_ro}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/qs_middleware_read_only.pdf}
+  }
+\end{figure}
+
+\subsubsection*{Write-Only}
+
+As in the read-only case, we reach the same maximum performance presented in Section \ref{sec:2.1}. It's the configuration with 64 worker threads that reaches $\approx$ 17,5k $ops/s$. From 6 to 24 virtual clients, every worker thread configuration behaves the same, from 48, we start to see a clear distinction between 8, 16, and 32 and 64, and at 96 there's no overlap in performance. Again, as before, we can individuate two main phases: the under-saturated one that goes from 6 to 192 \texttt{VCs}, and a second one, (saturated phase).The plot in \ref{sec:2.1} also shows that the point of switch of the two phases starts at \texttt{VCs=192/240}. 
+Furthermore, for the configuration with 64 worker threads, the response time shown in ~\ref{fig:baseline_mw_2_mw_mt_wo} is the same as the one in \ref{fig:baseline_no_mw_1_server_wo}.
+If we compare the client's and the middleware's plots, we can see that they show a consistent behavior between each other, even though, the client's one, both with 8 and 64 worker threads, has a considerable high \texttt{sttdev} ($\approx 3.6ms$). Especially in the case of 64 worker threads, we noticed the effect of a high \texttt{stddev} in the response time, that is visible in the throughput graphwith a \texttt{stddev} of $\approx$ 1.5k $ops/s$.
+The interactive law is almost collinear with the measured throughput in both client and middleware plots; for the client case, the computation is still the one presented in Section \ref{sec:2.1}, while for the middlewares it has been computed as mentioned in Section \ref{sec:3.1}, with the unique difference that in this configuration we need to asjust the computation of the number of jobs in the system, so having 2 middlewares, we sum up each middleware's measured number of jobs:
+
+\begin{lstlisting}[]
+# Little's Law for the number of jobs in the system
+jobs =  df.loc[(ratio, wt, vc), 'Jobs'].T.sum().mean() / 70.0  * 
+        df.loc[(ratio, wt, vc), 'ResponseTime (ms)'].unstack().T.mean().mean() / 1000
+il[i] = (1 / values[i]) * 1000 * (jobs / clients) 
+\end{lstlisting}
+
+The number of jobs recorded in each middleware is summed up, and then the average of the repetitions gets computed. Then we divide by the total duration of each experiment and we obtain an approximation on the arrival rate $\lambda$, that we multiply by the average time a request spends in the middleware (waiting + serviced = response time). then we simply divide by the number of physical client machines connected to the middleware, and multiply it by the inverse of the measured response time for a distinct configuration of worker threads and virtual clients. Note that both measured times are converted to \textit{seconds}, that is the reason we divide by 1000.
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two Middlewares (write-only CLIENT)}
+  \label{fig:baseline_mw_2_mw_mt_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/tp_memtier_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/rt_memtier_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two Middlewares (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/tp_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/rt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for baseline with two Middlewares, Service Time and Queue Waiting Time (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_c_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/st_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/wt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with two Middlewares, Average Queue Size (write-only MIDDLEWARE)}
+  \label{fig:baseline_mw_2_mw_mw_qs_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/baseline_mw_2_mw/qs_middleware_write_only.pdf}
+  }
+\end{figure}
 
 \subsection{Summary}
-
-Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
-
 
 \begin{center}
 	{Maximum throughput for one middleware.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  &            &               &                       &           \\ 
-		\hline Reads: Measured on clients     &            &               & n/a                   &           \\ 
-		\hline Writes: Measured on middleware &            &               &                       & n/a       \\ 
-		\hline Writes: Measured on clients    &            &               & n/a                   & n/a       \\ 
+		\hline Reads: Measured on middleware  & 2.92k $ops/s$ & 13.66 $ms$ & 0.85 $ms$ & 0.0 \\ 
+        \hline Reads: Measured on clients     & 2.97k $ops/s$ & 16.22 $ms$ & n/a  & 0.0 \\ 
+        \hline Writes: Measured on middleware & 12.5k $ops/s$ & 15.81 $ms$ & 10.42 $ms$ & n/a       \\ 
+        \hline Writes: Measured on clients    & 12.7k $ops/s$ & 16.38 $ms$ & n/a & n/a       \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -546,22 +660,22 @@ Based on the experiments above, fill out the following table. For both of them u
 	{Maximum throughput for two middlewares.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  &            &               &                       &           \\ 
-		\hline Reads: Measured on clients     &            &               & n/a                   &           \\ 
-		\hline Writes: Measured on middleware &            &               &                       & n/a       \\ 
-		\hline Writes: Measured on clients    &            &               & n/a                   & n/a       \\ 
+		\hline Reads: Measured on middleware  & 2.95k $ops/s$ & 62.12 $ms$ & 22.15 $ms$            & 0.0       \\ 
+		\hline Reads: Measured on clients     & 2.92k $ops/s$ & 64.32 $ms$ & n/a                   & 0.0       \\ 
+		\hline Writes: Measured on middleware & 16.8k $ops/s$ & 8.25 $ms$ & 2.48 $ms$             & n/a       \\ 
+        \hline Writes: Measured on clients    & 17.8k $ops/s$ & 11.43 $ms$ & n/a                   & n/a       \\ 
 		\hline 
 	\end{tabular}
 \end{center}
-
-Based on the data provided in these tables, write at least two paragraphs summarizing your findings about the performance of the middleware in the baseline experiments.
 
 \section{Throughput for Writes (90 pts)}
 
 \subsection{Full System}
 
-Connect three load generating VMs to two middlewares and three memchached servers. Run a write-only experiment. 
-You need to plot throughput and response time measured on the middleware as a function of number of clients. The measurements have to be performed for 8, 16, 32 and 64 worker threads inside each middleware.
+\subsubsection*{Experiment Setting}
+
+In this experiment we study the performance of the whole system when writing data.
+The setup is the same as the one with two Middlewares in Section \ref{sec:3.2}, we just increase the number of memcached machines to 3. Note that since we do not read data, we also do not need to populate the memcached servers.
 
 \begin{center}
 	\scriptsize{
@@ -570,51 +684,98 @@ You need to plot throughput and response time measured on the middleware as a fu
 			\hline Number of client machines        & 3          \\ 
 			\hline Instances of memtier per machine & 2          \\ 
 			\hline Threads per memtier instance     & 1          \\
-			\hline Virtual clients per thread       & [1..32]    \\ 
+			\hline Virtual clients per thread       & [1, 4, 8, 16, 24, 32, 64]    \\ 
 			\hline Workload                         & Write-only \\
 			\hline Multi-Get behavior               & N/A        \\
 			\hline Multi-Get size                   & N/A        \\
 			\hline Number of middlewares            & 2          \\
-			\hline Worker threads per middleware    & [8..64]    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)  \\ 
-			\hline 
+			\hline Worker threads per middleware    & [8, 16, 32, 64]    \\
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/throughput\_for\_writes/logs} \\
+            \hline Processed Files Path             & \texttt{experiments/throughput\_for\_writes/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+The throughput plot is similar to the one in Section \ref{sec:3.2}. Here we have thripled the number of servers, and throughput has noticeably decreased, at a point which it looks really similar to Section \ref{sec:3.1}. This decrease is noticed also by looking at the measured response time. We can see how here, the maximum response time is $\approx$ 50 $ms$, (vs $\approx$ 40 $ms$ as in Figure \ref{fig:baseline_mw_2_mw_mw_rt_wo}), and moreover, for every worker thread setup, the response time is shifted upwards, and at \texttt{VCs=384}, the difference between 8 and 64 worker threads is of $\approx$ 10 $ms$, smaller than the $\approx$ 15 $ms$ above.
+This difference in response time is due to the fact that the service time in this setting has raised considerably: in the case of 8 workers we observe a growth of $\approx$ 1 $ms$, while with 64, more than $3ms$. 
+Being the service time higher, each incoming request into the middleware spends more and more time waiting in the queue. This can be seen by comparing Figure \ref{fig:baseline_mw_1_mw_mw_wt_wo} and Figure ~\ref{fig:throughput_for_writes_mw_wt_wo}. We observe a constant increase of $\approx$ 10 $ms$ for every worker thread configuration. 
+One can see how, for 8 and 16 worker threads the system is saturated already at \texttt{VCs=96}. With 32 worker threads the saturation point is reached with \texttt{VCs=144}, and with 64, at \texttt{VCs=192}.
+Another evident behavior at those same point of saturation, is evident in the queue size plot: it starts to scale linearly as the workload increases, further confirming that the system is indeed saturated.
+
+\subsubsection*{Write-Only}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for throughput for writes (write-only CLIENT)}
+    \label{fig:throughput_for_writes_mt_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/tp_memtier_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/rt_memtier_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for throughput for writes (write-only MIDDLEWARE)}
+    \label{fig:throughput_for_writes_mw_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/tp_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/rt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \caption{Plots for throughput for writes, Service Time and Queue Waiting Time (write-only MIDDLEWARE)}
+  \label{fig:throughput_for_writes_mw_c_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/st_middleware_write_only.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/wt_middleware_write_only.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for baseline with two Middlewares, Average Queue Size (write-only MIDDLEWARE)}
+    \label{fig:throughput_for_writes_mw_qs_wo}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/throughput_for_writes/qs_middleware_write_only.pdf}
+  }
+\end{figure}
 
 \subsection{Summary}
-
-Based on the experiments above, fill out the following table with the data corresponding to the maximum throughput point for all four worker-thread scenarios.
 
 \begin{center}
 	{Maximum throughput for the full system}
 	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
-		\hline                                            & WT=8 & WT=16 & WT=32 & WT=64 \\ 
-		\hline Throughput (Middleware)                    &      &       &       &       \\ 
-		\hline Throughput (Derived from MW response time) &      &       &       &       \\ 
-		\hline Throughput (Client)                        &      &       &       &       \\ 
-		\hline Average time in queue                      &      &       &       &       \\ 
-		\hline Average length of queue                    &      &       &       &       \\ 
-		\hline Average time waiting for memcached         &      &       &       &       \\ 
+		\hline                                            & WT=8         & WT=16        & WT=32         & WT=64         \\ 
+		\hline Throughput (Middleware)                    & 8.3k $ops/s$ & 9.6k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
+		\hline Throughput (Derived from MW response time) & 8.3k $ops/s$ & 9.6k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
+		\hline Throughput (Client)                        & 8.3k $ops/s$ & 9.5k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
+		\hline Average time in queue                      & 12.35 $ms$   & 9.04 $ms$    & 5.85 $ms$     & 3.11 $ms$     \\ 
+		\hline Average length of queue                    & 49.4         & 41.4         & 30.9          & 17.6          \\ 
+		\hline Average time waiting for memcached         & 1.77 $ms$    & 2.62 $ms$    & 3.85 $ms$     & 5.29 $ms$     \\ 
 		\hline 
 	\end{tabular}
 \end{center}
 
-Based on the data provided in these tables, draw conclusions on the state of your system for a variable number of worker threads.
-
 \section{Gets and Multi-gets (90 pts)}
 
-For this set of experiments you will use three load generating machines, two middlewares and three memcached servers. Each memtier instance should have 2 virtual clients in total and the number of middleware worker threads is 64, or the one that provides the highest throughput in your system (whichever number of threads is smaller).
+\subsection{Experiment Setting}
 
-For multi-GET workloads, use the \texttt{--ratio} parameter to specify the exact ratio between SETs and GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
+This set of experiments aims to measure and analyze the performance of the middleware when dealing with multi-GET requests.
+There are 3 client machines running 2 single-threaded instances of memtier generating multi-GET workloads (as depicted in the table below). Each instance is connected two one of the two middlewares (each to a different one) with the maximum throughput configuration.
+Each middleware is connected to 3 memcached machines running a single-threaded memcached instance each.
+We are interested in generating two types of multi-GET requests (sharded and non-sharded), and compare their effect on the overall system.
+
+\subsection*{Maximum Throughput Choice}
+For this particular case, since we are more concerned on the performances when reading rather than writing (which consitutes for a small fraction of the total of operations, $\approx \dfrac{1}{3 \cdot 6 \cdot 9}$), having no comparable setting (no experiment with 2 middlewares connected to 3 servers, apart from Section \ref{sec:4.1}), the maximum (stable) throughput considered is the one reached in \ref{sec:3.2}, obtained with 64 worker threads.
 
 \subsection{Sharded Case}
-
-Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 
 \begin{center}
 	\scriptsize{
@@ -626,18 +787,46 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 			\hline Virtual clients per thread       & 2     		            \\ 
 			\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
 			\hline Multi-Get behavior               & Sharded                 \\
-			\hline Multi-Get size                   & [1..9]                  \\
+			\hline Multi-Get size                   & [1, 3, 6, 9]            \\
 			\hline Number of middlewares            & 2                       \\
-			\hline Worker threads per middleware    & max. throughput config. \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
-			\hline 
+            \hline Worker threads per middleware    & 64 (MAX throughput config) \\
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/multigets\_sharded/logs} \\
+            \hline Processed Files Path             & \texttt{experiments/multigets\_sharded/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets sharded, (Throughput MIDDLEWARE)}
+  \label{fig:multigets_sharded_mw_tp}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/multigets_sharded/tp_middleware_multigets_sharded.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets sharded, (Response Time CLIENT)}
+  \label{fig:multigets_sharded_mt_rt}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/multigets_sharded/rt_memtier_multigets_sharded.pdf}
+  }
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets sharded, (Response Time Distribution CLIENT MIDDLEWARE)}
+  \label{fig:multigets_sharded_mt_mw_rt_d}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/multigets_sharded/rt_distribution_memtier_multigets_sharded.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/multigets_sharded/rt_distribution_middleware_multigets_sharded.pdf}
+  }
+\end{figure}
 
 \subsection{Non-sharded Case}
 
@@ -653,22 +842,46 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding dis
 			\hline Virtual clients per thread       & 2                		 \\ 
 			\hline Workload                         & ratio=1:$<$Multi-Get size$>$              \\
 			\hline Multi-Get behavior               & Non-Sharded             \\
-			\hline Multi-Get size                   & [1..9]                  \\
+			\hline Multi-Get size                   & [1, 3, 6, 9]                  \\
 			\hline Number of middlewares            & 2                       \\
-			\hline Worker threads per middleware    & max. throughput config. \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
-			\hline 
+            \hline Worker threads per middleware    & 64 (MAX throughput config) \\
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/multigets\_non\_sharded/logs} \\
+            \hline Processed Files Path             & \texttt{experiments/multigets\_non\_sharded/out/memtier\_data.csv}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets non sharded, (Throughput MIDDLEWARE)}
+  \label{fig:multigets_non_sharded_mw_tp}
+  \makebox[\textwidth]{
+      \includegraphics[width=0.6\textwidth]{figures/multigets_non_sharded/tp_middleware_multigets_non_sharded.pdf}
+  }
+\end{figure}
 
-\subsection{Histogram}
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets non sharded, (Response Time CLIENT)}
+  \label{fig:multigets_non_sharded_mt_rt}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/multigets_non_sharded/rt_memtier_multigets_non_sharded.pdf}
+  }
+\end{figure}
 
-For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
+\begin{figure}[!h]
+  \centering
+    \caption{Plots for multigets non sharded, (Response Time Distribution CLIENT MIDDLEWARE)}
+  \label{fig:multigets_non_sharded_mt_mw_rt_d}
+  \makebox[\textwidth]{
+    \includegraphics[width=0.6\textwidth]{figures/multigets_non_sharded/rt_distribution_memtier_multigets_non_sharded.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/multigets_non_sharded/rt_distribution_middleware_multigets_non_sharded.pdf}
+  }
+\end{figure}
 
 \subsection{Summary}
 
@@ -746,75 +959,114 @@ and $q_0, q_A, \dots q_{ABC},$ and $\epsilon$ (\textbf{experimental error}) are 
 
 \subsubsection{Throughput}
 
-\paragraph{Read-Only}
+\subsubsection*{Read-Only}
 
+\begin{center}
+\scriptsize{
 \begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
 \hline
     \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
-    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 2919.15 & 2924.77 & 2926.62 & 2923.51\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 2938.38 & 2941.38 & 293985 & 2939.87\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 2931.00 & 2930.24 & 2936.23 & 2932.49\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 2930.93 & 2935.77 & 2943.00 & 2936.57\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 2208.15 & 2100.92 & 2105.38& 2138.15\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 2329.69 & 2279.54 & 2379.46 & 2329.56\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 4051.39 & 4144.38 & 3912.92 & 4036.23\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 4391.15 & 4464.54 & 4362.77 & 4406.15\\ \hline
+      & 3080.32 & 147.21 & 497.54 & 72.72 & 496.12 & 67.61 & 20.78 & 23.85 & Total/8 & & &\\ \hline
 \end{tabu}
+}
+\end{center}
 
-\paragraph{Write-Only}
 
+\subsubsection*{Write-Only}
+\begin{center}
+\scriptsize{
 \begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
 \hline
     \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
-    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 7513.69 & 7467.46 & 7527.77 & 7502.97\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 10299.85 & 10494.08 & 10384.38 & 10392.77\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 10539.31 & 11077.77 & 11350.31 & 10989.13\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 15661.00 & 15949.92 & 15640.54 & 15753.82\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 4942.85 & 4501.46 & 5197.00 & 4880.44\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 7163.38 & 6809.62 & 6746.46 & 6912.49\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 6719.23 & 7008.00 & 7159.15 & 6962.13\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 10302.61 & 10609.69 & 10622.93 & 10511.74\\ \hline
+      & 9238.19 & -1921.49 & 1816.02 & 1654.52 & -395.78 & -259.1 & 424.06 & -44.67 & Total/8 & & &\\ \hline
 \end{tabu}
+}
+\end{center}
 
 \subsubsection{ResponseTime}
 
-\paragraph{Read-Only}
+\subsubsection*{Read-Only}
 
 \begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
 \hline
     \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
-    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 62.73 & 62.47 & 62.54 & 62.58\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 62.01 & 61.87 & 61.47 & 61.68\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 63.30 & 63.26 & 63.14 & 63.23\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 62.57 & 62.45 & 62.33 & 62.45\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 78.62 & 85.91 & 83.73 & 82.75\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 60.64 & 63.64 & 61.04 & 61.77\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 42.02 & 41.22 & 44.16 & 42.46\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 32.84 & 32.94 & 33.53 & 33.10\\ \hline
+      & 58.77 & -3.74 & -8.46 & -3.99 & -8.78 & -3.60 & 1.45 & 1.45 & Total/8 & & &\\ \hline 
+
 \end{tabu}
 
-\paragraph{Write-Only}
+\subsubsection*{Write-Only}
 
 \begin{tabu}{|r|r|r|r|r|r|r|r|r|r|r|r|r|}
 \hline
     \rowfont[c]{\bfseries} i & I & A & B & C & AB & AC & BC & ABC & $y_1$ & $y_2$ & $y_3$ & $\hat{y}$\\ \hline
-    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
-    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0.0 & 0.0 & 0.0 & 0.0\\ \hline
+    1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 20.16 & 22.01 & 20.56 & 20.91\\ \hline
+    2 & 1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 11.71 & 9.43 & 11.99 & 11.04\\ \hline
+    3 & 1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 15.60 & 14.74 & 14.06 & 14.80\\ \hline
+    4 & 1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 9.00 & 8.75 & 8.85 & 8.87\\ \hline
+    5 & 1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 35.89 & 34.65 & 34.07 & 34.87\\ \hline
+    6 & 1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 22.1 & 23.53 & 21.51 & 22.38\\ \hline
+    7 & 1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 25.4 & 24.73 & 24.24 & 24.79\\ \hline
+    8 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 15.76 & 15.10 & 15.03 & 15.30\\ \hline
+      & 19.12 & 5.21 & -3.18 & -4.72 & -1.11 & 0.77 & 0.87 & -0.12 & Total/8 & & &\\ \hline
 \end{tabu}
 
+\newpage
 \section{Queuing Model (90 pts)}
 
-Note that for queuing models it is enough to use the experimental results from the previous sections. It is, however, possible that the numbers you need are not only the ones in the figures we asked for, but also the internal measurements that you have obtained through instrumentation of your middleware.
+In this section we model our system with different techniques using some particular measurements recorded inside the middleware, to predict the behavior of the internal state of the system, and compare it, with the actual values.
+
+In this section we introduce the following notation to describe the relevant factors that we take into consideration:
+
+\begin{itemize}
+    \item $\tau$ is the interarrival time between two successive requests
+    \item $\lambda$ is the arrival rate
+    \item $\mu$ is the service rate
+    \item $\rho$ is the utilization factor
+    \item $r$ is the response time
+    \item $s$ is the service time
+    \item $w$ is the queue waiting time
+    \item $n$ is the total number of jobs in the system ($n = n_q + n_s$)
+    \item $n_q$ is the total number of jobs waiting in the queue
+    \item $n_s$ is the total number of jobs being served
+\end{itemize}
 
 \subsection{M/M/1}
 
-Build queuing model based on Section 4 (write-only throughput) for each worker-thread configuration of the middleware. Use one M/M/1 queue to model your entire system. Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
+In this section we model our system based on the results of Section \ref{sec:4.1} for each worker thread configuration.
+In the M/M/1 model ther is only a single queue and a single server ($m=1$). The model assumes that the $\tau$'s are IID, (follow a Poisson distribution: meaning constant rate and independence between each sample), and that jobs get enqueued in a single queue from where they get taken out and serviced in a First Come, Fist Served fashion. Another assumption of the model is that, it is closed, meaning that no flow can enter from outside; thus we can already take the throughput as a measure of $\lambda$, (indeed memtier machines issue new request upon receiving an answer back for the current request being serviced). 
+In order to conduct further analysis we need to estimate the service rate $\mu$. We could either:
+\begin{itemize}
+    \item compute the service rate as the inverse of the mean service time. If we would choose this approach, we would need to into account that we are running two middlewares with 64 worker threads so we should normalize the service time by dividing it for $(\#mws \cdot \#wts$) so 128 in this case.
+    \item use the maximum measured throughput as lower bound on the service rate. This is justified by the fact that the average throughput is always less or equal the average service rate in our system, given the fact that wait some idle in the queue. Moreover there's some overhead created by switching jobs, so it seems a fair reasonable measure.
+\end{itemize}
+We try both approaches and compared the results in the following Section.
+As $\lambda$ depends on the number of virtual clients, we choose to report the results we obtain for two configurations: one with \texttt{VCs=24} (under-saturated system), and one with \texttt{VCs=384} (saturated system). 
+
+\subsubsection*{Results}
 
 \subsection{M/M/m}
 
