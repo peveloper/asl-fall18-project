@@ -1,7 +1,7 @@
 # ASL fall project 2018
 
 ## Repository structure
-
+```bash
  .
     ├── middleware      # Source files and .jar
     ├── experiments     # Log files, processing scripts, plots, images
@@ -23,7 +23,7 @@
     ├── multigets_non_sharded        # 5.2
     ├── 2k_analysis                  # 6
     └── queue_models                 # 7
-
+```
 Every log file has a clear structure in its name that identifies the configuration that is being tested:
 e.g. ratio1:0_run2_vclients1_workerthreads16_client3_instance1.log 
 means that this log represents the 2nd repetition of a write-only workload, with 1 vclient, 16 workerthreads and is being sent from the instance 1 of client 3.
