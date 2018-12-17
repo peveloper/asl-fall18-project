@@ -24,7 +24,9 @@
     ├── 2k_analysis                  # 6
     └── queue_models                 # 7
 ```
-Every log file has a clear structure in its name that identifies the configuration that is being tested:
-e.g. ratio1:0_run2_vclients1_workerthreads16_client3_instance1.log 
+Every log file has a clear structure in its name that identifies the configuration that is being tested, e.g.
+```
+ratio1:0_run2_vclients1_workerthreads16_client3_instance1.log
+```
 means that this log represents the 2nd repetition of a write-only workload, with 1 vclient, 16 workerthreads and is being sent from the instance 1 of client 3.
 
