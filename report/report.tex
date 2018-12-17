@@ -661,26 +661,30 @@ In the write-only workload, we reach a similar performance as in Section \ref{se
 
 \begin{center}
 	{Maximum throughput for one middleware.}
+    \scriptsize{
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  & 2.92k $ops/s$ & 13.66 $ms$ & 0.85 $ms$ & 0.0 \\ 
-        \hline Reads: Measured on clients     & 2.97k $ops/s$ & 16.22 $ms$ & n/a  & 0.0 \\ 
-        \hline Writes: Measured on middleware & 12.5k $ops/s$ & 15.81 $ms$ & 10.42 $ms$ & n/a       \\ 
-        \hline Writes: Measured on clients    & 12.7k $ops/s$ & 16.38 $ms$ & n/a & n/a       \\ 
+        \hline Reads: Measured on middleware (\texttt{32 VCs} per thread) & 2.92k $ops/s$ & 13.66 $ms$ & 0.85 $ms$ & 0.0 \\ 
+        \hline Reads: Measured on clients (\texttt{32 VCs} per thread)    & 2.97k $ops/s$ & 16.22 $ms$ & n/a  & 0.0 \\ 
+        \hline Writes: Measured on middleware (\texttt{32 VCs} per thread) & 12.5k $ops/s$ & 15.81 $ms$ & 10.42 $ms$ & n/a       \\ 
+        \hline Writes: Measured on clients (\texttt{32 VCs} per thread)    & 12.7k $ops/s$ & 16.38 $ms$ & n/a & n/a       \\ 
 		\hline 
 	\end{tabular}
+    }
 \end{center}
 
 \begin{center}
 	{Maximum throughput for two middlewares.}
+    \scriptsize{
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  & 2.95k $ops/s$ & 62.12 $ms$ & 22.15 $ms$            & 0.0       \\ 
-		\hline Reads: Measured on clients     & 2.92k $ops/s$ & 64.32 $ms$ & n/a                   & 0.0       \\ 
-		\hline Writes: Measured on middleware & 16.8k $ops/s$ & 8.25 $ms$ & 2.48 $ms$             & n/a       \\ 
-        \hline Writes: Measured on clients    & 17.8k $ops/s$ & 11.43 $ms$ & n/a                   & n/a       \\ 
+        \hline Reads: Measured on middleware (\texttt{64 VCs} per thread) & 2.95k $ops/s$ & 62.12 $ms$ & 22.15 $ms$            & 0.0       \\ 
+		\hline Reads: Measured on clients (\texttt{32 VCs} per thread) & 2.92k $ops/s$ & 64.32 $ms$ & n/a                   & 0.0       \\ 
+        \hline Writes: Measured on middleware  (\texttt{64 VCs} per thread) & 16.8k $ops/s$ & 8.25 $ms$ & 2.48 $ms$             & n/a       \\ 
+        \hline Writes: Measured on clients   (\texttt{64 VCs} per thread)  & 17.8k $ops/s$ & 11.43 $ms$ & n/a                   & n/a       \\
 		\hline 
 	\end{tabular}
+}
 \end{center}
 
 \section{Throughput for Writes (90 pts)}
@@ -772,16 +776,18 @@ The reason that supports this claim can be found by comparing Figure \ref{fig:th
 
 \begin{center}
 	{Maximum throughput for the full system}
+    \scriptsize{
 	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
 		\hline                                            & WT=8         & WT=16        & WT=32         & WT=64         \\ 
-		\hline Throughput (Middleware)                    & 8.3k $ops/s$ & 9.6k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
+        \hline Throughput (Middleware)                    & 8.3k $ops/s$ \texttt{16 VCs} per thread & 9.6k $ops/s$ (\texttt{32 VCs} per thread) & 11.3k $ops/s$ (\texttt{32 VCs} per thread)& 12.9k $ops/s$ \texttt{64 VCs} per thread\\ 
 		\hline Throughput (Derived from MW response time) & 8.3k $ops/s$ & 9.6k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
-		\hline Throughput (Client)                        & 8.3k $ops/s$ & 9.5k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
+        \hline Throughput (Client) (max config is same as MW)                       & 8.3k $ops/s$ & 9.5k $ops/s$ & 11.3k $ops/s$ & 12.9k $ops/s$ \\ 
 		\hline Average time in queue                      & 12.35 $ms$   & 9.04 $ms$    & 5.85 $ms$     & 3.11 $ms$     \\ 
 		\hline Average length of queue                    & 49.4         & 41.4         & 30.9          & 17.6          \\ 
 		\hline Average time waiting for memcached         & 1.77 $ms$    & 2.62 $ms$    & 3.85 $ms$     & 5.29 $ms$     \\ 
 		\hline 
 	\end{tabular}
+}
 \end{center}
 
 \section{Gets and Multi-gets (90 pts)}
@@ -969,8 +975,10 @@ Based on results on experiments in Section~\ref{sec:3.1}, we do expect the numbe
 			\hline Multi-Get size                   & N/A                                         \\
 			\hline Number of middlewares            & 1 and 2                                     \\
 			\hline Worker threads per middleware    & 8 and 32                                    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                                   \\ 
-			\hline 
+            \hline Repetitions                      & 3 (70 secs, effective 60 secs) \\ 
+            \hline Log Files Path                   & \texttt{experiments/2k\_analysis/2k\_analysis\_1\_mw\_1\_server/logs}, e.g. with 1 mw and 1 server \\
+            \hline Processed Files Path             & \texttt{experiments/2k\_analysis/out}\\
+            \hline
 		\end{tabular}
 	} 
 \end{center}
@@ -1007,11 +1015,14 @@ and $q_0, q_A, \dots q_{ABC},$ and $\epsilon$ (\textbf{experimental error}) are 
 
 \subsection{Results}
 
+We perform the analysis both on the throughput and on the response time for both read-only and write-only workloads. Results consider two scenarios: one in which the load of the system is low (under-saturated) and the maximum throughput configuration (saturated).
+
 \subsubsection*{Throughput}
 
 \subsubsection*{Read-Only}
 
 \begin{table}[!htb]
+    \label{tab:2k_1}
     \centering
     \caption{Sign Table Method for read-only workload (Throughput)}
 \scriptsize{
@@ -1031,11 +1042,19 @@ and $q_0, q_A, \dots q_{ABC},$ and $\epsilon$ (\textbf{experimental error}) are 
 }
 \end{table}
 
-In the above table, each row represents one combination of the factors ($x_A, x_B, x_C$), the last column
+In Table~\ref{tab:2k_1}, each row represents one combination of the factors ($x_A, x_B, x_C$), the last column
 is the average throughput and, the last row in the table shows the coefficients ($q_0, q_A, \dots q_ABC$) that solve the system of equations.
+Table~\ref{tab:2k_1_v} summarizes the strength of variation of throughput. Each row represent the sum of the squares of the factors, their interaction, as well as:
+\begin{itemize}
+    \item SSO is the sum squares of $q_0$
+    \item SSY is the sum of squares of the response variable
+    \item SSE is the sum of squares of the experimental error
+    \item SST is the total sum of the squares
+\end{itemize}
 
 \begin{table}[!htb]
   \centering
+    \label{tab:2k_1_v}
     \caption{Allocation of variations for read-only workload (Throughput)}
   \label{tab:ro_variation}
   \small{
@@ -1057,6 +1076,19 @@ is the average throughput and, the last row in the table shows the coefficients 
   }
 \end{table}
 
+\begin{table}[!htb]
+\centering
+    \caption{Confidence Intervals, read-only workload}
+    \label{tab:2k_1_c}
+    \begin{tabular}{|r|r|r|r|r|r|r|r|}
+  \hline
+         \textbf{I}        & \textbf{A}       & \textbf{B}       & \textbf{C}       & \textbf{AB}      & \textbf{AC}      &\textbf{BC}       & \textbf{ABC}    \\
+  \hline
+         3057.33 & 124.22 & 474.56 & 49.74 & 473.14 & 44.63 & -2.20 & 0.87 \\
+        \hline 3103.30 & 170.19 & 520.53 & 95.70 & 519.11 & 90.60 & 43.76 &  \\
+  \hline
+\end{tabular}
+\end{table}
 
 \newpage
 \subsubsection*{Write-Only}
@@ -1104,6 +1136,20 @@ is the average throughput and, the last row in the table shows the coefficients 
   }
 \end{table}
 
+\begin{table}[!htb]
+\centering
+    \caption{Confidence Intervals, write-only workload}
+    \label{tab:2k_1_c}
+    \begin{tabular}{|r|r|r|r|r|r|r|r|}
+  \hline
+         \textbf{I}        & \textbf{A}       & \textbf{B}       & \textbf{C}       & \textbf{AB}      & \textbf{AC}      &\textbf{BC}       & \textbf{ABC}    \\
+  \hline 9133.96 & -2025.71 & 1711.79 & 1550.29 & -500.01 & -363.33 & 319.83 & -148.89 \\
+  \hline 9342.41 & -1817.26 & 1920.24 & 1758.74 & -291.56 & -154.88 & 528.28 & 59.56 \\
+  \hline
+\end{tabular}
+\end{table}
+
+
 \subsubsection*{ResponseTime}
 
 \subsubsection*{Read-Only}
@@ -1147,6 +1193,19 @@ is the average throughput and, the last row in the table shows the coefficients 
       \hline
     \end{tabular}
   }
+\end{table}
+
+\begin{table}[!htb]
+\centering
+    \caption{Confidence Intervals, read-only workload}
+    \label{tab:2k_1_c}
+    \begin{tabular}{|r|r|r|r|r|r|r|r|}
+  \hline
+         \textbf{I}        & \textbf{A}       & \textbf{B}       & \textbf{C}       & \textbf{AB}      & \textbf{AC}      &\textbf{BC}       & \textbf{ABC}    \\
+    \hline 58.10 & -4.41 & -9.13 & -4.66 & -9.46 & -4.27 & 0.78 & 0.78 \\
+    \hline 59.44 & -3.07 & -7.79 & -3.32 & -8.11 & -2.92 & 2.12 & 2.12 \\
+  \hline
+\end{tabular}
 \end{table}
 
 \newpage
@@ -1193,7 +1252,32 @@ is the average throughput and, the last row in the table shows the coefficients 
   }
 \end{table}
 
-\newpage
+\begin{table}[!htb]
+\centering
+    \caption{Confidence Intervals, read-only workload}
+    \label{tab:2k_1_c}
+    \begin{tabular}{|r|r|r|r|r|r|r|r|}
+  \hline
+         \textbf{I}        & \textbf{A}       & \textbf{B}       & \textbf{C}       & \textbf{AB}      & \textbf{AC}      &\textbf{BC}       & \textbf{ABC}    \\
+  \hline 18.74 & 4.84 & -3.56 & -5.10 & -1.48 & -1.15 & 0.49 & -0.49 \\
+        \hline 19.49 & 5.59 & -2.81 & -4.35 & -0.74 & -0.40 & 1.24 & 1.26 \\
+  \hline
+\end{tabular}
+\end{table}
+
+\subsection{Summary}
+
+Data results of the analysis for the throughput and response time do look similar.
+For the read-only workload the primal factors that count for the variation in throughput and response time are the number of middlewares and the interaction between the number of middlewares and the number of servers. It is also visible by just looking at the measured throughput in Table~\ref{tab:2k_1}. We can see how from row 4 the trhoughput decreases when we raise the number of memcached instances, and in row 6 it doubles thanks to the presence of another middleware, which itself, doesn't seem to make a difference when the number of servers is equal to 1, confirming our bottleneck analysis derived in Section~\ref{sec:3}.
+The write-only workload results show a different behavior compared to the read-only case. Here, the primal factors that contribute the most in the change of the response variable are:
+\begin{itemize}
+    \item the number of servers $\approx 35-40\%$
+    \item the number of middlewares $\approx20-25\%$
+    \item the number of worker threads $\approx30-35\%$
+\end{itemize}
+From what we have concluded in Section~\ref{sec:3.1} the bottleneck of the system was the number of worker threads of the middleware, indeed in Section~\ref{sec:3.2} by having 2 middlewares we are able to write as in Section~\ref{sec:2.1}, reaching maximum throughput achievable by the load of the machine ($\approx 17.5k ops/s$), then in Section~\ref{sec:4.1}, where the number of servers is now 3, we have registered a decrease in throughput similar to Section~\ref{sec:3.1}. 
+In conclusion, results of the analysis show a consistent behavior to what has been found out in the previous eexperiments.
+
 \section{Queuing Model (90 pts)}
 
 In this section we model our system with different techniques using some particular measurements recorded inside the middleware, to predict the behavior of the internal state of the system, and compare it, with the actual values.
@@ -1289,6 +1373,11 @@ As $\lambda$ depends on the number of virtual clients, we choose to report the r
 
 \subsection{M/M/m}
 
+In this section we model the system as a combination of $m$ independent services processing requests out of a single queue.
+The same assumption of the M/M/1 model do still hold, apart from the obvious number of services, and we use again, data from Section~\ref{sec:4.1}.
+Being the M/M/m model suited for modeling systems that have more parallel independent components, we should expect results to be more accurate than the M/M/1 model.
+The choice of the input parameters is done by taking again the throughput as a measure for the arrival rate, and for the service rate, we compute it as the inverse of the service time, and we multiply $m$ by 2 in order to take into account the fact the there are 2 middlewares.
+
 \begin{table}[!h]
   \centering
     \caption{Results of the M/M/m queue model for 24 \texttt{VCs}}
@@ -1307,7 +1396,7 @@ As $\lambda$ depends on the number of virtual clients, we choose to report the r
         \hline Mean response time ($E[r]$)                        & 39.5 ${ms}$   & 26.4 ${ms}$         & 44.35 ${ms}$         & 17.2 ${ms}$          \\
         \hline Mean waiting time ($E[w]$)                         & 39.3 ${ms}$          & 26.3 ${ms}$  & 44.19 ${ms}$         & 17.09 ${ms}$         \\
         \rowcolor{mygray}
-        \hline Mean \# of jobs in the system ($E[n]$)             & $\approx$ 5.2 ${reqs}$ & $\approx$ 5.1 ${reqs}$ & $\approx$ 4.96 ${reqs}$ & $\approx$ 4.73 ${reqs}$ \\
+        \hline Mean \# of jobs in the system ($E[n]$)             & $\approx$ 0.11 ${reqs}$ & $\approx$ 0.15 ${reqs}$ & $\approx$ 0.28 ${reqs}$ & $\approx$ 0.43 ${reqs}$ \\
         \rowcolor{mygray}
         \hline Mean \# of jobs in the queue ($E[n_q]$)            & 1.3 ${reqs}$         & 2.7 ${reqs}$         & 5.8 ${reqs}$         & 13.8 ${reqs}$        \\
         \rowcolor{mygray}
@@ -1339,7 +1428,7 @@ As $\lambda$ depends on the number of virtual clients, we choose to report the r
         \hline Mean response time ($E[r]$)                        & 2.51 ${ms}$      & 4.22 ${ms}$       & 6.26 ${ms}$      & 9.95 ${ms}$          \\
         \hline Mean waiting time ($E[w]$)                         & 0.71 ${ms}$      & 1.05 ${ms}$       & 0.89 ${ms}$      & 0.55 ${ms}$          \\
         \rowcolor{mygray}
-        \hline Mean \# of jobs in the system ($E[n]$)             & $\approx$ 2 $reqs$ & $\approx$ 0 $reqs$ & $\approx$ 0 $reqs$ & $\approx$ 0 $reqs$  \\
+        \hline Mean \# of jobs in the system ($E[n]$)             & 5.2 ${reqs}$       & 5.1 ${reqs}$       & 14.96 ${reqs}$      & 4.73 ${reqs}$        \\
         \rowcolor{mygray}
         \hline Mean \# of jobs in the queue ($E[n_q]$)            & 347.36 $reqs$      & 321.46 $reqs$      & 282.2 $reqs$       & 203.4 $reqs$        \\
         \rowcolor{mygray}
@@ -1355,9 +1444,16 @@ As $\lambda$ depends on the number of virtual clients, we choose to report the r
 \newpage
 \subsection{Network of Queues}
 
+In this section we model the system as a newtwork of queues, in order to find out the Utilization factor of each component, using data from Section~\ref{sec:3.1} and Section~\ref{sec:3.2}.\\
+
+Our model consists of a \textit{Parser} that takes jobs from the queue, process them and send them to the \textit{Workers}, which are connected to a single \textit{Server}. Again, our system is a closed system, meaning the outflow of the \textit{Server} goes back to the \textit{Parser}, thus the $V_{ratio}$ of the \textit{Server} and the \textit{Parser} are the same (=1).
+The $V_{ratio}$ of the workers component is computed as the probability of a request to get to a specific \textit{Worker} $w$, which in the case of one middleware is $\dfrac{1}{\texttt{WTs}}$, and $\dfrac{1}{2\texttt{WTs}}$, for two middlewares.
+We can compute the throughput of each component by multiplying the $V_{ratio}$ of each component by the measured throughput. To obtain the utiliazion of each factor we need the service time measured inside the analyzed component. Here we do not have such measures, so we have tried to approximate the service time of the Workers as the service time measured on the middleware. Results (especially in the read-only case) do not seem to be sound with what presented in the above sections, merely because we are effectively using a poor measure of the service time of each worker.
+Following results for the partial analysis are shown:
+
 \begin{figure}[!h]
   \centering
-    \caption{Network of Queues: note that our model consists of just one queue per parser, and 64 worker threads.}
+    \caption{Network of Queues: note that our model consists of just one queue per parser, and 64 worker threads, and just a single server}
     \label{fig:queue_models_newtork}
   \makebox[\textwidth]{
       \includegraphics[width=0.6\textwidth]{figures/queue_models/network.png}
@@ -1456,6 +1552,5 @@ As $\lambda$ depends on the number of virtual clients, we choose to report the r
 \bottomrule
 \end{tabular}
 \end{table}
-
 
 \end{document}
