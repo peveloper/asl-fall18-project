@@ -367,7 +367,6 @@ class Worker implements Runnable {
             }
         }else if(request.getType() == 1 || (request.getType() == 2 && !readSharded)){
             SelectionKey selectionKey = mcSocketChannelKeys.get(mcAddresses.get(getServerFromKey(request.getKeys()[0])));
-            System.out.println((request.getKeys()[0]));
             multiRequest.put(selectionKey, request.getBuffer());
         }else{
             for(SelectionKey selectionKey: selector.keys()){

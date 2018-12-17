@@ -104,11 +104,9 @@ class MW {
         if (stream.size() > 3){
 
             String endMessage = "\r\n";
-//            String storedMessage = "STORED\r\n";
 
             int positionCounterString = 0;
             int indexEnd = stream.size() - endMessage.length();
-//            int indexStored = stream.size() - storedMessage.length();
 
             while((stream.toByteArray()[indexEnd]) == endMessage.charAt(positionCounterString)){
                 indexEnd++;
@@ -121,18 +119,6 @@ class MW {
             if (indexEnd == stream.size()){
                 return true;
             }
-            positionCounterString = 0;
-
-//            while((stream.toByteArray()[indexStored]) == storedMessage.charAt(positionCounterString)){
-//                indexStored++;
-//                positionCounterString++;
-//                if (indexStored >= stream.size()){
-//                    break;
-//                }
-//            }
-//
-//            return indexStored == stream.size();
-
         }
         return  false;
 

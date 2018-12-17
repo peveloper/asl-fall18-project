@@ -74,13 +74,10 @@ class Writer extends Thread {
         toRemove.forEach(stat -> statistics.remove(stat));
 
         double totOps = nGet + nSet + nMultiGets;
-        System.out.println(avg_rt / totOps / 1000 / 1000 + " msec");
-        System.out.println(avg_rt / 1e6 / totOps + " msec");
         int opsType = 0;
         long epsilon = 500000000L;
         double runningTime = (MW.endTime - MW.startTime);
         double winSize = round(((runningTime) < (step + epsilon)) ? ((runningTime) / 1e9) : (step / 1e9));
-        System.out.println(winSize);
         double getMissRatio = 0.0, multiGetMissRatio = 0.0;
 
         if(totOps > 0) {
@@ -207,7 +204,6 @@ class Writer extends Thread {
         }
 
         double runningTime = (endTime - startTime) / 1e9;
-        System.out.println(runningTime);
         double seconds = (step / 1e9);
 
         for(Worker worker: MW.workerThreads){
